@@ -48,21 +48,13 @@
     </nav>
 </div>
 
+<h1>{{ .Nanny.Name }}</h1>
+<p>Experience: {{ .Nanny.Experience }}</p>
+<p>Phone: {{ .Nanny.Phone }}</p>
+<p>Description: {{ .Nanny.Description }}</p>
+<p>Price: {{ .Nanny.Price }}</p>
+<img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}">
 
-    
-<div class="nanny-profile">
-    <h1>{{.Name}}</h1>
-    <div class="nanny-details">
-        <img src="{{.PhotoURL}}" alt="Photo of {{.Name}}" class="nanny-photo">
-        <div class="nanny-info">
-            <p><strong>Experience:</strong> {{.Experience}} years</p>
-            <p><strong>Phone:</strong> {{.Phone}}</p>
-            <p><strong>Price per hour:</strong> ${{.Price}}</p>
-            <p><strong>Description:</strong></p>
-            <p>{{.Description}}</p>
-        </div>
-    </div>
-</div>
 
 <!-- Подвал -->
 <footer>

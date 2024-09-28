@@ -52,19 +52,8 @@
             <input type="hidden" name="id" value="{{ .UserID }}">
             <button type="submit" class="btn btn-secondary">Перейти на админскую страницу</button>
         </form>
-        <form action="/chief_editor_page" method="GET">
-            <input type="hidden" name="id" value="{{ .UserID }}">
-            <button type="submit" class="btn btn-secondary">Перейти на страницу главного редактора</button>
-        </form>    
-        <form action="/section_editor_page" method="GET">
-            <input type="hidden" name="id" value="{{ .UserID }}">
-            <button type="submit" class="btn btn-secondary">Перейти на страницу редактора раздела</button>
-        </form>
-        <form action="/author_page" method="GET">
-            <input type="hidden" name="id" value="{{ .UserID }}">
-            <button type="submit" class="btn btn-secondary">Перейти на страницу автора</button>
-        </form>
-        {{ else if eq .Role "Nanny" }}
+       
+        {{ else if eq .Role "nanny" }}
         <h2>Панель няни</h2>
         <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
         <form action="/catalog" method="GET">

@@ -57,8 +57,8 @@
         <div class="col-md-4">
             <div class="nanny-card">
                 <!-- Оборачивание изображения в ссылку -->
-                <a href="/nanny/details?id={{.ID}}">
-                    <input type="hidden" name="id" value="{{ .UserID }}">
+                <a href="/nanny/details?user_id={{$.UserID}}&nanny_id={{.ID}}">
+
                     <img src="{{.PhotoURL}}" alt="Photo of {{.Name}}">
                 </a>
                 <h3>{{.Name}}</h3>

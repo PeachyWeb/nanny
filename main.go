@@ -16,6 +16,9 @@ func main() {
 
 	// Страницы для ролей
 	http.HandleFunc("/admin_page", handlers.AdminPage)
+	http.HandleFunc("/edit_nanny", handlers.EditNannyHandler)     // Обработчик для редактирования профиля
+	http.HandleFunc("/update_nanny", handlers.UpdateNannyHandler) // Обработчик для обновления профиля
+
 	http.HandleFunc("/nanny", handlers.NannyPage)    // Добавляем маршрут для "Няня"
 	http.HandleFunc("/user_page", handlers.UserPage) // Добавляем маршрут для "User"
 	http.HandleFunc("/nanny/details", handlers.NannyHandler)

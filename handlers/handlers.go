@@ -49,6 +49,7 @@ var TmplRegister = template.Must(template.ParseFiles("templates/register.html"))
 var TmplMain = template.Must(template.ParseFiles("templates/upload1.html"))
 var TmplAdmin = template.Must(template.ParseFiles("templates/admin_page.html"))
 var TmplNanny = template.Must(template.ParseFiles("templates/nanny_page.html"))
+var TmplEditNanny = template.Must(template.ParseFiles("templates/edit_nanny.html"))
 var TmplHome = template.Must(template.ParseFiles("templates/home.html"))
 
 // Получаем имя пользователя по ID из базы данных
@@ -361,8 +362,6 @@ func GetNannies() []Nanny {
 	return nannies
 }
 
-// Структура для нянь
-
 // Функция для парсинга HTML-шаблонов
 func ParseTemplate(filename string) *template.Template {
 	tmpl, err := template.ParseFiles(filename)
@@ -637,4 +636,84 @@ func NannyHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error rendering template: %v, PageData: %+v", err, pageData)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 	}
+}
+
+// Handler для обновления профиля няни
+func UpdateNannyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		// Получение данных из формы
+		nannyID := r.FormValue("id")
+		name := r.FormValue("name")
+		description := r.FormValue("description")
+		priceStr := r.FormValue("price")
+		photoURL := r.FormValue("photo_url")
+
+		// Преобразование цены из строки в float64
+		price, err := strconv.ParseFloat(priceStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid price", http.StatusBadRequest)
+			return
+		}
+
+		// Обновление данных о няне в базе данных
+		query := "UPDATE nannies SET name = $1, description = $2, price = $3, photo_url = $4 WHERE id = $5"
+		_, err = Db.Exec(query, name, description, price, photoURL, nannyID)
+		if err != nil {
+			http.Error(w, "Error updating nanny profile", http.StatusInternalServerError)
+			return
+		}
+
+		// Перенаправление обратно на страницу с каталогом или панелью
+		http.Redirect(w, r, "/nanny_page?id="+nannyID, http.StatusFound)
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+}
+
+// Handler для редактирования профиля няни
+func EditNannyHandler(w http.ResponseWriter, r *http.Request) {
+	userIDStr := r.URL.Query().Get("id")
+	if userIDStr == "" {
+		http.Error(w, "User ID not provided", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Получение данных о няне из базы данных
+	nanny, err := GetNannyByID(userID)
+	if err != nil {
+		http.Error(w, "Error getting nanny data from database", http.StatusInternalServerError)
+		return
+	}
+
+	// Отправка данных в шаблон редактирования профиля
+	data := struct {
+		UserID int
+		Nanny  Nanny
+	}{
+		UserID: userID,
+		Nanny:  nanny,
+	}
+
+	// Замените "templates/edit_nanny.html" на ваш путь к шаблону
+	err = TmplEditNanny.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// Функция для получения няни по ID
+func GetNannyByID(nannyID int) (Nanny, error) {
+	var nanny Nanny
+	query := "SELECT id, name, description, price, photo_url FROM nannies WHERE id = $1"
+	err := Db.QueryRow(query, nannyID).Scan(&nanny.ID, &nanny.Name, &nanny.Description, &nanny.Price, &nanny.PhotoURL)
+	if err != nil {
+		return nanny, err
+	}
+	return nanny, nil
 }

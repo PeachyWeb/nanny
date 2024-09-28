@@ -44,7 +44,6 @@
     <div class="container mt-5">
         <h1>Welcome, {{.UserName}}!</h1>
         <h2>Your role: {{.Role}}</h2>
-        <p>Вы успешно зарегистрированы.</p>
 
         {{ if eq .Role "Admin" }}
         <h2>Панель администратора</h2>
@@ -56,7 +55,8 @@
         {{ else if eq .Role "nanny" }}
         <h2>Панель няни</h2>
         <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
-        <form action="/catalog" method="GET">
+        <form action="/edit_nanny" method="GET">
+            <input type="hidden" name="id" value="{{ .UserID }}">
             <button type="submit" class="btn btn-primary">Перейти в каталог нянь</button>
         </form>
         {{ end }}

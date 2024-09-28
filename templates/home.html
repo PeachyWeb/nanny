@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <style>
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: white;
+            padding: 10px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .card-img-top {
+            height: 300px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Верхнее меню -->
+<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+    <h5 class="my-0 mr-md-auto font-weight-normal">Nanny Market</h5>
+    <nav class="my-2 my-md-0 mr-md-3">
+        <a class="p-2 text-dark" href="/main?id={{ .UserID }}">Главная
+            <input type="hidden" name="id" value="{{ .UserID }}">
+        </a>
+        <a class="p-2 text-dark" href="/catalog?id={{ .UserID }}">Каталог нянь
+            <input type="hidden" name="id" value="{{ .UserID }}">
+        </a>
+        <a class="p-2 text-dark" href="/cart?id={{ .UserID }}">Корзина
+            <input type="hidden" name="id" value="{{ .UserID }}">
+        </a>
+    </nav>
+</div>
+<body>
+    <div class="container mt-5">
+        <h1>Welcome, {{.UserName}}!</h1>
+        <h2>Your role: {{.Role}}</h2>
+        <p>Вы успешно зарегистрированы.</p>
+
+        {{ if eq .Role "Admin" }}
+        <h2>Панель администратора</h2>
+        <form action="/admin_page" method="GET">
+            <input type="hidden" name="id" value="{{ .UserID }}">
+            <button type="submit" class="btn btn-secondary">Перейти на админскую страницу</button>
+        </form>
+        <form action="/chief_editor_page" method="GET">
+            <input type="hidden" name="id" value="{{ .UserID }}">
+            <button type="submit" class="btn btn-secondary">Перейти на страницу главного редактора</button>
+        </form>    
+        <form action="/section_editor_page" method="GET">
+            <input type="hidden" name="id" value="{{ .UserID }}">
+            <button type="submit" class="btn btn-secondary">Перейти на страницу редактора раздела</button>
+        </form>
+        <form action="/author_page" method="GET">
+            <input type="hidden" name="id" value="{{ .UserID }}">
+            <button type="submit" class="btn btn-secondary">Перейти на страницу автора</button>
+        </form>
+        {{ else if eq .Role "Nanny" }}
+        <h2>Панель няни</h2>
+        <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
+        <form action="/catalog" method="GET">
+            <button type="submit" class="btn btn-primary">Перейти в каталог нянь</button>
+        </form>
+        {{ end }}
+    </div>
+</body>
+</html>

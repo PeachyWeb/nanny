@@ -51,9 +51,44 @@
 <h1>{{ .Nanny.Name }}</h1>
 <p>Experience: {{ .Nanny.Experience }}</p>
 <p>Phone: {{ .Nanny.Phone }}</p>
+<p>Средний рейтинг: {{ .Nanny.AverageRating }}</p>
 <p>Description: {{ .Nanny.Description }}</p>
 <p>Price: {{ .Nanny.Price }}</p>
 <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}">
+
+<h2>Оставить отзыв</h2>
+<form action="/add_review" method="POST">
+    <input type="hidden" name="user_id" value="{{ .UserID }}">
+    <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Исправлено на .Nanny.ID -->
+    
+    <div>
+        <label for="rating">Рейтинг (1-5):</label>
+        <input type="number" id="rating" name="rating" min="1" max="5" required>
+    </div>
+    
+    <div>
+        <label for="comment">Комментарий:</label>
+        <textarea id="comment" name="comment"></textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Оставить отзыв</button>
+</form>
+
+
+<h2>Отзывы</h2>
+{{ if .Reviews }}
+    <ul>
+    {{ range .Reviews }}
+        <li>
+            <strong>Пользователь {{ .UserID }}</strong> поставил оценку: {{ .Rating }}/5<br>
+            <em>{{ .Comment }}</em> <br>
+            <small>Дата: {{ .CreatedAt }}</small>
+        </li>
+    {{ end }}
+    </ul>
+{{ else }}
+    <p>Пока нет отзывов</p>
+{{ end }}
 
 
 <!-- Подвал -->
@@ -63,4 +98,3 @@
 
 </body>
 </html>
-

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -86,4 +87,85 @@ func HashPassword(password string) (string, error) {
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+func Home(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		TmplRegister.Execute(w, nil) // Отображение страницы регистрации/входа
+	} else if r.Method == http.MethodPost {
+		login := r.FormValue("login")
+		password := r.FormValue("password")
+
+		// Попробуем аутентифицировать пользователя
+		id := AuthenticateUser(r.Context(), login, password)
+
+		if id == -1 {
+			// Пользователь существует, но пароль неверный
+			log.Println("Ошибка аутентификации: неверный пароль")
+			http.ServeFile(w, r, "templates/errorModal.html") // Ошибка при аутентификации
+		} else if id > 0 {
+			// Пользователь успешно аутентифицирован
+			log.Printf("Успешная аутентификация для пользователя с ID: %d", id)
+			http.Redirect(w, r, "/main?id="+strconv.Itoa(id), http.StatusFound)
+		} else {
+			// Пользователь не найден — создаем новую учетную запись
+			log.Println("Регистрация нового пользователя")
+			hashedPassword, err := HashPassword(password)
+			if err != nil {
+				http.Error(w, "Ошибка при хешировании пароля", http.StatusInternalServerError)
+				return
+			}
+
+			// Вставляем нового пользователя в базу данных
+			query := "INSERT INTO users (login, password, role) VALUES ($1, $2, 'user') RETURNING id"
+			var newUserID int
+			err = Db.QueryRow(query, login, hashedPassword).Scan(&newUserID)
+			if err != nil {
+				http.Error(w, "Ошибка при регистрации пользователя", http.StatusInternalServerError)
+				return
+			}
+
+			log.Printf("Пользователь успешно зарегистрирован с ID: %d", newUserID)
+			// После успешной регистрации автоматически заходим в систему
+			http.Redirect(w, r, "/main?id="+strconv.Itoa(newUserID), http.StatusFound)
+		}
+	}
+}
+
+// Обработчик главной страницы
+func Index(w http.ResponseWriter, r *http.Request) {
+	userIDStr := r.URL.Query().Get("id")
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
+		return
+	}
+
+	userName, err := GetUserNameByIDFromDB(userID)
+	if err != nil {
+		http.Error(w, "Ошибка при получении имени пользователя из базы данных", http.StatusInternalServerError)
+		return
+	}
+
+	role, err := GetUserRoleByIDFromDB(userID)
+	if err != nil {
+		http.Error(w, "Ошибка при получении роли пользователя из базы данных", http.StatusInternalServerError)
+		return
+	}
+
+	// Добавляем данные для шаблона
+	data := struct {
+		UserID   int
+		UserName string
+		Role     string
+	}{
+		UserID:   userID,
+		UserName: userName,
+		Role:     role,
+	}
+
+	// Отправляем данные в шаблон
+	err = TmplHome.Execute(w, data)
+	if err != nil {
+		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
+	}
 }

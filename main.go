@@ -32,6 +32,9 @@ func main() {
 	http.HandleFunc("/admin/employees", handlers.AdminEmployeesPage)
 	http.HandleFunc("/update_user", handlers.UpdateUserHandler)
 
+	//отзывы
+	http.HandleFunc("/add_review", handlers.AddReviewHandler) // Обработчик для добавления отзыва
+
 	log.Println("Сервер запущен на порту :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

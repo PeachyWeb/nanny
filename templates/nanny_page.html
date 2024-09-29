@@ -1,11 +1,40 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная страница</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <title>Страница няни</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
         footer {
             position: fixed;
             bottom: 0;
@@ -14,87 +43,83 @@
             background-color: white;
             padding: 10px;
         }
-        .card {
-            margin-bottom: 20px;
-        }
-        .card-img-top {
-            height: 300px;
-            object-fit: cover;
-        }
-        .nanny-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .nanny-card img {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            cursor: pointer;
-        }
+
     </style>
 </head>
+
 <body>
 
-<!-- Верхнее меню -->
-<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-    <h5 class="my-0 mr-md-auto font-weight-normal">Nanny Market</h5>
-    <nav class="my-2 my-md-0 mr-md-3">
-        <a class="p-2 text-dark" href="/main?id={{ .UserID }}">Главная</a>
-        <a class="p-2 text-dark" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
-        <a class="p-2 text-dark" href="/cart?id={{ .UserID }}">Корзина</a>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main?id={{ .UserID }}">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main?id={{ .UserID }}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart?id={{ .UserID }}">Корзина</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
-</div>
 
-<h1>{{ .Nanny.Name }}</h1>
-<p>Experience: {{ .Nanny.Experience }}</p>
-<p>Phone: {{ .Nanny.Phone }}</p>
-<p>Средний рейтинг: {{ .Nanny.AverageRating }}</p>
-<p>Description: {{ .Nanny.Description }}</p>
-<p>Price: {{ .Nanny.Price }}</p>
-<img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}">
+    <h1>{{ .Nanny.Name }}</h1>
+    <p>Experience: {{ .Nanny.Experience }}</p>
+    <p>Phone: {{ .Nanny.Phone }}</p>
+    <p>Средний рейтинг: {{ .Nanny.AverageRating }}</p>
+    <p>Description: {{ .Nanny.Description }}</p>
+    <p>Price: {{ .Nanny.Price }}</p>
+    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}">
 
-<h2>Оставить отзыв</h2>
-<form action="/add_review" method="POST">
-    <input type="hidden" name="user_id" value="{{ .UserID }}">
-    <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Исправлено на .Nanny.ID -->
-    
-    <div>
-        <label for="rating">Рейтинг (1-5):</label>
-        <input type="number" id="rating" name="rating" min="1" max="5" required>
-    </div>
-    
-    <div>
-        <label for="comment">Комментарий:</label>
-        <textarea id="comment" name="comment"></textarea>
-    </div>
-    
-    <button type="submit" class="btn btn-primary">Оставить отзыв</button>
-</form>
+    <h2>Оставить отзыв</h2>
+    <form action="/add_review" method="POST">
+        <input type="hidden" name="user_id" value="{{ .UserID }}">
+        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Исправлено на .Nanny.ID -->
+        
+        <div>
+            <label for="rating">Рейтинг (1-5):</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" required>
+        </div>
+        
+        <div>
+            <label for="comment">Комментарий:</label>
+            <textarea id="comment" name="comment"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Оставить отзыв</button>
+    </form>
 
 
-<h2>Отзывы</h2>
-{{ if .Reviews }}
-    <ul>
-    {{ range .Reviews }}
-        <li>
-            <strong>Пользователь {{ .UserID }}</strong> поставил оценку: {{ .Rating }}/5<br>
-            <em>{{ .Comment }}</em> <br>
-            <small>Дата: {{ .CreatedAt }}</small>
-        </li>
+    <h2>Отзывы</h2>
+    {{ if .Reviews }}
+        <ul>
+        {{ range .Reviews }}
+            <li>
+                <strong>Пользователь {{ .UserID }}</strong> поставил оценку: {{ .Rating }}/5<br>
+                <em>{{ .Comment }}</em> <br>
+                <small>Дата: {{ .CreatedAt }}</small>
+            </li>
+        {{ end }}
+        </ul>
+    {{ else }}
+        <p>Пока нет отзывов</p>
     {{ end }}
-    </ul>
-{{ else }}
-    <p>Пока нет отзывов</p>
-{{ end }}
 
 
-<!-- Подвал -->
-<footer>
-    <p>Nanny Market &copy; 2024</p>
-</footer>
-
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
 </body>
 </html>

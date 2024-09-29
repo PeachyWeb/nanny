@@ -4,8 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Страница администратора</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: white;
+            padding: 10px;
+        }
+
+    </style>
 </head>
 <body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main?id={{ .UserID }}">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main?id={{ .UserID }}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart?id={{ .UserID }}">Корзина</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <h1>Добро пожаловать на админскую страницу!</h1>
     <p>Здесь могут находиться функции и инструменты для администраторов.</p>
 
@@ -45,6 +108,11 @@
     {{else}}
     <p>Список сотрудников еще не загружен.</p>
     {{end}}
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
     
 </body>
 </html>

@@ -3,9 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная страница</title>
+    <title>Страница изменения страницы няни</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
         footer {
             position: fixed;
             bottom: 0;
@@ -14,58 +42,61 @@
             background-color: white;
             padding: 10px;
         }
-        .card {
-            margin-bottom: 20px;
-        }
-        .card-img-top {
-            height: 300px;
-            object-fit: cover;
-        }
-        .nanny-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .nanny-card img {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            cursor: pointer;
-        }
+
     </style>
 </head>
 <body>
 
-<!-- Верхнее меню -->
-<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-    <h5 class="my-0 mr-md-auto font-weight-normal">Nanny Market</h5>
-    <nav class="my-2 my-md-0 mr-md-3">
-        <a class="p-2 text-dark" href="/main?id={{ .UserID }}">Главная</a>
-        <a class="p-2 text-dark" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
-        <a class="p-2 text-dark" href="/cart?id={{ .UserID }}">Корзина</a>
+     <!-- Навигационная панель -->
+     <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main?id={{ .UserID }}">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main?id={{ .UserID }}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart?id={{ .UserID }}">Корзина</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
-</div>
 
-<h2>Редактировать профиль няни</h2>
-<form action="/update_nanny" method="POST">
-    <input type="hidden" name="id" value="{{ .UserID }}">
-    <div>
-        <label for="name">Имя:</label>
-        <input type="text" id="name" name="name" value="{{ .Nanny.Name }}" required>
-    </div>
-    <div>
-        <label for="description">Описание:</label>
-        <textarea id="description" name="description" required>{{ .Nanny.Description }}</textarea>
-    </div>
-    <div>
-        <label for="price">Цена:</label>
-        <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required>
-    </div>
-    <div>
-        <label for="photo_url">URL фото:</label>
-        <input type="text" id="photo_url" name="photo_url" value="{{ .Nanny.PhotoURL }}">
-    </div>
-    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-</form>
+    <h2>Редактировать профиль няни</h2>
+    <form action="/update_nanny" method="POST">
+        <input type="hidden" name="id" value="{{ .UserID }}">
+        <div>
+            <label for="name">Имя:</label>
+            <input type="text" id="name" name="name" value="{{ .Nanny.Name }}" required>
+        </div>
+        <div>
+            <label for="description">Описание:</label>
+            <textarea id="description" name="description" required>{{ .Nanny.Description }}</textarea>
+        </div>
+        <div>
+            <label for="price">Цена:</label>
+            <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required>
+        </div>
+        <div>
+            <label for="photo_url">URL фото:</label>
+            <input type="text" id="photo_url" name="photo_url" value="{{ .Nanny.PhotoURL }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+    </form>
+
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>

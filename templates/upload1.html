@@ -66,7 +66,7 @@
                         <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/cart?id={{ .UserID }}">Корзина</a>
+                        <a class="nav-link" href="/calendar?id={{ .UserID }}">Календарь</a>
                     </li>
                 </ul>
             </div>
@@ -106,7 +106,7 @@
             <div class="col-12 col-md-6 col-lg-4 nanny-card" data-experience="{{ .Experience }}"
                 data-price="{{ .Price }}" data-rating="{{ .AverageRating }}">
                 <div class="card h-100 shadow-sm">
-                    <a href="/nanny_page?id={{ .ID }}" class="stretched-link text-decoration-none text-dark">
+                    <a href="/nanny/details?user_id={{$.UserID}}&nanny_id={{.ID}}" class="stretched-link text-decoration-none text-dark">
                         <img src="{{ .PhotoURL }}" class="card-img-top" alt="Фото няни">
                         <div class="card-body">
                             <h5 class="card-title">{{ .Name }}</h5>
@@ -115,12 +115,7 @@
                             <p>Стаж: {{ .Experience }}</p>
                             <p>Рейтинг: {{ .AverageRating }}</p>
                             <!-- Кнопка добавления няни в корзину -->
-                            <button class="btn btn-primary add-to-cart" 
-                                    data-id="{{ .ID }}" 
-                                    data-name="{{ .Name }}" 
-                                    data-price="{{ .Price }}">
-                                Добавить в корзину
-                            </button>
+                        
                         </div>
                     </a>
                 </div>

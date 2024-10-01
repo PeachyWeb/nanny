@@ -66,7 +66,7 @@
                         <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/cart?id={{ .UserID }}">Корзина</a>
+                        <a class="nav-link" href="/calendar?id={{ .UserID }}">Календарь</a>
                     </li>
                 </ul>
             </div>
@@ -80,6 +80,25 @@
     <p>Description: {{ .Nanny.Description }}</p>
     <p>Price: {{ .Nanny.Price }}</p>
     <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}">
+
+    <h2 class="mt-4">Оформить найм няни</h2>
+    <form action="/hire_nanny" method="POST" class="mb-4">
+        <input type="hidden" name="user_id" value="{{ .UserID }}">
+        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}">
+
+        <div class="mb-3">
+            <label for="start_time" class="form-label">Время начала:</label>
+            <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="end_time" class="form-label">Время окончания:</label>
+            <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-success">Нанять няню</button>
+    </form>
+
 
     <h2>Оставить отзыв</h2>
     <form action="/add_review" method="POST">

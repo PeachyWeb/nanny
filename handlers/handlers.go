@@ -13,12 +13,7 @@ import (
 )
 
 // Структура пользователя
-type User struct {
-	IDuser   int
-	Login    string
-	Password string
-	Role     string
-}
+
 type Review struct {
 	ID        int
 	NannyID   int
@@ -26,6 +21,19 @@ type Review struct {
 	Rating    int
 	Comment   string
 	CreatedAt time.Time // Добавлено поле
+}
+
+type Appointment struct {
+	NannyID   int
+	StartTime time.Time
+	EndTime   time.Time
+}
+
+type User struct {
+	IDuser   int
+	Login    string
+	Password string
+	Role     string
 }
 
 type NannyDetailPage struct {
@@ -55,6 +63,8 @@ type Nanny struct {
 	PhotoURL      string
 	AverageRating float64 // Новое поле
 	ReviewCount   int     // Новое поле
+	UserID        int
+	UserName      string
 }
 
 var Db *sql.DB
@@ -64,6 +74,7 @@ var TmplAdmin = template.Must(template.ParseFiles("templates/admin_page.html"))
 var TmplNanny = template.Must(template.ParseFiles("templates/nanny_page.html"))
 var TmplEditNanny = template.Must(template.ParseFiles("templates/edit_nanny.html"))
 var TmplHome = template.Must(template.ParseFiles("templates/home.html"))
+var TmplCalendar = template.Must(template.ParseFiles("templates/calendar.html"))
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -337,4 +348,149 @@ func CalculateAverageRating(ratings []float64) float64 {
 		total += rating
 	}
 	return total / float64(len(ratings))
+}
+
+/*
+// isDayBusy проверяет, занят ли указанный день
+
+	func isDayBusy(day int, appointments []Appointment) bool {
+		for _, app := range appointments {
+			if app.StartTime.Day() == day {
+				return true
+			}
+		}
+		return false
+	}
+*/
+
+/*func init() {
+	// Parse templates
+	TmplCalendar = template.Must(template.New("calendar.html").Funcs(template.FuncMap{
+		"isDayBusy": isDayBusy,
+	}).ParseFiles("calendar.html"))
+}*/
+
+// isDayBusy checks if a given day is busy based on the list of appointments.
+/*func isDayBusy(day int, appointments []Appointment) bool {
+	for _, app := range appointments {
+		if app.StartTime.Day() == day {
+			return true
+		}
+	}
+	return false
+}*/
+
+// CalendarHandler обрабатывает запросы на страницу календаря
+
+func CalendarHandler(w http.ResponseWriter, r *http.Request) {
+	userIDStr := r.URL.Query().Get("id")
+	if userIDStr == "" {
+		http.Error(w, "User ID not provided", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Fetch appointments from database
+	query := `SELECT nannyid, starttime, endtime FROM appointments WHERE userid = $1`
+	rows, err := Db.Query(query, userID)
+	if err != nil {
+		log.Println("Error querying appointments:", err)
+		http.Error(w, "Unable to retrieve calendar data", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var appointments []Appointment
+	for rows.Next() {
+		var app Appointment
+		if err := rows.Scan(&app.NannyID, &app.StartTime, &app.EndTime); err != nil {
+			log.Println("Error scanning appointment:", err)
+			http.Error(w, "Error processing data", http.StatusInternalServerError)
+			return
+		}
+		appointments = append(appointments, app)
+	}
+
+	username, err := GetUserNameByID(userID)
+	if err != nil {
+		http.Error(w, "Error getting user data from database", http.StatusInternalServerError)
+		return
+	}
+	// Calculate busy days
+	busyDays := make(map[int]bool)
+	for _, app := range appointments {
+		day := app.StartTime.Day()
+		busyDays[day] = true
+	}
+
+	// Prepare data for template
+	data := struct {
+		UserID   string
+		UserName string
+		Days     []int
+		BusyDays map[int]bool
+	}{
+		UserID:   userIDStr,
+		UserName: username,
+		Days:     make([]int, 31),
+		BusyDays: busyDays,
+	}
+
+	for i := range data.Days {
+		data.Days[i] = i + 1
+	}
+
+	// Execute the template
+	err = TmplCalendar.Execute(w, data)
+	if err != nil {
+		log.Println("Error executing template:", err)
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+	}
+}
+
+func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		userID := r.FormValue("user_id")
+		nannyID := r.FormValue("nanny_id")
+		startTime := r.FormValue("start_time")
+		endTime := r.FormValue("end_time")
+
+		// Преобразование времени из строки в формат time.Time
+		start, err := time.Parse("2006-01-02T15:04", startTime)
+		if err != nil {
+			http.Error(w, "Invalid start time format", http.StatusBadRequest)
+			return
+		}
+
+		end, err := time.Parse("2006-01-02T15:04", endTime)
+		if err != nil {
+			http.Error(w, "Invalid end time format", http.StatusBadRequest)
+			return
+		}
+
+		// Проверка на корректность временного диапазона
+		if end.Before(start) {
+			http.Error(w, "End time must be after start time", http.StatusBadRequest)
+			return
+		}
+
+		// Вставка данных в таблицу appointments
+		query := `INSERT INTO appointments (userid, nannyid, starttime, endtime) VALUES ($1, $2, $3, $4)`
+		_, err = Db.Exec(query, userID, nannyID, start, end)
+		if err != nil {
+			log.Println("Error inserting appointment into database:", err)
+			http.Error(w, "Failed to hire nanny. Please try again later.", http.StatusInternalServerError)
+			return
+		}
+
+		// Перенаправление пользователя на страницу календаря после успешного добавления записи
+		http.Redirect(w, r, "/calendar?id="+userID, http.StatusSeeOther)
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
 }

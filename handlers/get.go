@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"log"
 )
 
@@ -137,4 +138,73 @@ func GetAllUsers() ([]User, error) {
 		users = append(users, user)
 	}
 	return users, nil
+}
+func GetNannies(db *sql.DB, minExperience int, maxPrice int, minRating int) ([]Nanny, error) {
+	var nannies []Nanny
+
+	// Базовый SQL-запрос
+	query := `SELECT id, name, experience, phone, description, price, photo_url, average_rating, review_count FROM nannies WHERE 1=1`
+
+	// Добавляем условия фильтрации, если они заданы
+	var args []interface{}
+	if minExperience > 0 {
+		query += ` AND experience >= ?`
+		args = append(args, minExperience)
+	}
+	if maxPrice > 0 {
+		query += ` AND price <= ?`
+		args = append(args, maxPrice)
+	}
+	if minRating > 0 {
+		query += ` AND average_rating >= ?`
+		args = append(args, minRating)
+	}
+
+	// Выполняем запрос с фильтрами
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		log.Printf("Ошибка при выполнении запроса: %v", err)
+		return nil, err
+	}
+	defer rows.Close() // Закрываем rows после использования
+
+	// Проходим по результатам запроса
+	for rows.Next() {
+		var nanny Nanny
+		// Сканируем данные из строки в структуру
+		if err := rows.Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.Description, &nanny.Price, &nanny.PhotoURL, &nanny.AverageRating, &nanny.ReviewCount); err != nil {
+			log.Printf("Ошибка при сканировании строки: %v", err)
+			continue // Пропускаем ошибочную строку
+		}
+		nannies = append(nannies, nanny) // Добавляем няню в срез
+	}
+
+	// Проверяем на ошибки, возникшие во время итерации по строкам
+	if err := rows.Err(); err != nil {
+		log.Printf("Ошибка в процессе чтения строк: %v", err)
+		return nil, err
+	}
+
+	return nannies, nil // Возвращаем полученный список нянь
+}
+
+// Функция для получения пользователя по ID
+func GetUserByID(userID int) (User, error) {
+	var user User
+	err := Db.QueryRow("SELECT id, login, role FROM users WHERE id = $1", userID).Scan(&user.IDuser, &user.Login, &user.Role)
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+// Функция для получения пользователя по ID
+func GetUserNameByID(userID int) (string, error) {
+	var login string
+	err := Db.QueryRow("SELECT login FROM users WHERE id = $1", userID).Scan(&login)
+	if err != nil {
+		return "", err
+	}
+	return login, nil
 }

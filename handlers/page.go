@@ -232,55 +232,6 @@ func CatalogPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetNannies(db *sql.DB, minExperience int, maxPrice int, minRating int) ([]Nanny, error) {
-	var nannies []Nanny
-
-	// Базовый SQL-запрос
-	query := `SELECT id, name, experience, phone, description, price, photo_url, average_rating, review_count FROM nannies WHERE 1=1`
-
-	// Добавляем условия фильтрации, если они заданы
-	var args []interface{}
-	if minExperience > 0 {
-		query += ` AND experience >= ?`
-		args = append(args, minExperience)
-	}
-	if maxPrice > 0 {
-		query += ` AND price <= ?`
-		args = append(args, maxPrice)
-	}
-	if minRating > 0 {
-		query += ` AND average_rating >= ?`
-		args = append(args, minRating)
-	}
-
-	// Выполняем запрос с фильтрами
-	rows, err := db.Query(query, args...)
-	if err != nil {
-		log.Printf("Ошибка при выполнении запроса: %v", err)
-		return nil, err
-	}
-	defer rows.Close() // Закрываем rows после использования
-
-	// Проходим по результатам запроса
-	for rows.Next() {
-		var nanny Nanny
-		// Сканируем данные из строки в структуру
-		if err := rows.Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.Description, &nanny.Price, &nanny.PhotoURL, &nanny.AverageRating, &nanny.ReviewCount); err != nil {
-			log.Printf("Ошибка при сканировании строки: %v", err)
-			continue // Пропускаем ошибочную строку
-		}
-		nannies = append(nannies, nanny) // Добавляем няню в срез
-	}
-
-	// Проверяем на ошибки, возникшие во время итерации по строкам
-	if err := rows.Err(); err != nil {
-		log.Printf("Ошибка в процессе чтения строк: %v", err)
-		return nil, err
-	}
-
-	return nannies, nil // Возвращаем полученный список нянь
-}
-
 func NannyPage(w http.ResponseWriter, r *http.Request) {
 	userIDStr := r.URL.Query().Get("id")
 	nannyIDStr := r.URL.Query().Get("nanny_id")

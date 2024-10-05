@@ -91,6 +91,12 @@
         <form action="/edit_nanny" method="GET">
             <button type="submit" class="btn btn-primary">Перейти в каталог нянь</button>
         </form>
+        {{ else if eq .Role "user" }}
+        <h2>Станьте няней!</h2>
+        <p>Если вы хотите стать няней, пожалуйста, ознакомьтесь с гайдом, который расскажет вам, какие документы и формы необходимы для регистрации.</p>
+        <form action="/become_nanny_guide" method="GET">
+            <button type="submit" class="btn btn-success">Посмотреть гайд по регистрации няней</button>
+        </form>
         {{ end }}
     </div>
     <footer >

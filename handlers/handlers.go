@@ -31,10 +31,16 @@ type Appointment struct {
 }
 
 type User struct {
-	IDuser   int
-	Login    string
-	Password string
-	Role     string
+	IDuser     int
+	Login      string
+	Password   string
+	Role       string
+	FirstName  sql.NullString // Может быть NULL
+	LastName   sql.NullString // Может быть NULL
+	Patronymic sql.NullString // Может быть NULL
+	City       sql.NullString // Может быть NULL
+	Phone      sql.NullString // Может быть NULL
+	Age        sql.NullInt64  // Может быть NULL
 }
 
 type NannyDetailPage struct {
@@ -77,6 +83,7 @@ var TmplEditNanny = template.Must(template.ParseFiles("templates/edit_nanny.html
 var TmplHome = template.Must(template.ParseFiles("templates/home.html"))
 var TmplCalendar = template.Must(template.ParseFiles("templates/calendar.html"))
 var TmplProfile = template.Must(template.ParseFiles("templates/profile.html"))
+var TmplNannyGuide = template.Must(template.ParseFiles("templates/nanny_guid.html"))
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -568,4 +575,101 @@ func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
+}
+
+// RegisterNanny обрабатывает регистрацию будущей няни
+func GuideNanny(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		// Получаем данные из формы
+		firstName := r.FormValue("first_name")
+		lastName := r.FormValue("last_name")
+		patronymic := r.FormValue("patronymic")
+		city := r.FormValue("city")
+		phone := r.FormValue("phone")
+		age := r.FormValue("age")
+
+		// Сохраняем данные в базе данных
+		_, err := Db.Exec("INSERT INTO future_nannies (user_id, first_name, last_name, patronymic, city, phone, age) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+			userID, firstName, lastName, patronymic, city, phone, age)
+		if err != nil {
+			log.Println("Ошибка при регистрации няни:", err)
+			http.Error(w, "Ошибка при регистрации", http.StatusInternalServerError)
+			return
+		}
+
+		// Перенаправляем на страницу профиля
+		http.Redirect(w, r, "/main", http.StatusSeeOther)
+		return
+	}
+
+	// Обрабатываем GET-запрос, чтобы отобразить форму
+	w.Header().Set("Content-Type", "text/html")
+	if err := TmplNannyGuide.Execute(w, nil); err != nil { // Предполагается, что у вас есть шаблон TmplNannyGuide
+		log.Println("Ошибка выполнения шаблона:", err)
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
+	}
+}
+
+// RegisterNanny обрабатывает регистрацию будущей няни
+func RegisterNanny(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		// Получаем данные из формы
+		firstName := r.FormValue("first_name")
+		lastName := r.FormValue("last_name")
+		patronymic := r.FormValue("patronymic")
+		city := r.FormValue("city")
+		phone := r.FormValue("phone")
+		age := r.FormValue("age")
+
+		// Проверяем наличие справки о здоровье и релевантного опыта
+		healthCertificate := r.FormValue("health_certificate") == "on"   // Это проверка на "on" или "off"
+		relevantExperience := r.FormValue("relevant_experience") == "on" // То же самое
+
+		// Сохраняем данные в базе данных
+		_, err := Db.Exec(
+			"INSERT INTO future_nannies (user_id, first_name, last_name, patronymic, city, phone, age, health_certificate, relevant_experience) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+			userID, firstName, lastName, patronymic, city, phone, age, healthCertificate, relevantExperience,
+		)
+		if err != nil {
+			log.Println("Ошибка при регистрации няни:", err)
+			http.Error(w, "Ошибка при регистрации", http.StatusInternalServerError)
+			return
+		}
+
+		// Перенаправляем на страницу профиля
+		http.Redirect(w, r, "/main", http.StatusSeeOther)
+		return
+	}
+
+	http.Error(w, "Метод не разрешен", http.StatusMethodNotAllowed)
 }

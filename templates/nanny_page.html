@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница няни</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: white;
+            padding: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <h1>{{ .Nanny.Name }}</h1> <!-- Изменено на отображение только ID -->
+    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}" class="img-fluid mb-4"> <!-- Фотография няни -->
+    
+    <h2 class="mt-4">Оформить найм няни</h2>
+    <form action="/hire_nanny" method="POST" class="mb-4">
+        <input type="hidden" name="user_id" value="{{ .UserID }}">
+        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Изменено на .Nanny.ID -->
+
+        <div class="mb-3">
+            <label for="start_time" class="form-label">Время начала:</label>
+            <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="end_time" class="form-label">Время окончания:</label>
+            <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-success">Нанять няню</button>
+    </form>
+
+    <h2>Оставить отзыв</h2>
+    <form action="/add_review" method="POST">
+        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Изменено на .Nanny.ID -->
+
+        <div>
+            <label for="rating">Рейтинг (1-5):</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" required>
+        </div>
+
+        <div>
+            <label for="comment">Комментарий:</label>
+            <textarea id="comment" name="comment"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Оставить отзыв</button>
+    </form>
+
+    <h2>Отзывы</h2>
+    {{ if .Reviews }}
+        <ul>
+        {{ range .Reviews }}
+            <li>
+                <strong>Пользователь {{ .UserID }}</strong> поставил оценку: {{ .Rating }}/5<br>
+                <em>{{ .Comment }}</em> <br>
+                <small>Дата: {{ .CreatedAt }}</small>
+            </li>
+        {{ end }}
+        </ul>
+    {{ else }}
+        <p>Пока нет отзывов</p>
+    {{ end }}
+
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        /* Стиль для календаря */
+        .calendar {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .day {
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 14.28%; /* 7 дней в ряду */
+            box-sizing: border-box;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .busy {
+            background-color: #f8d7da;
+        }
+        .free {
+            background-color: #d4edda;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <h1>Календарь пользователя {{ .UserName }}</h1>
+
+    <div class="calendar">
+        {{ range .Days }}
+        <div class="day {{ if index $.BusyDays . }}busy{{ else }}free{{ end }}">
+            <strong>День {{ . }}</strong><br>
+            {{ if index $.BusyDays . }}
+            <span>Занят</span>
+            {{ else }}
+            <button class="btn btn-info">Добавить событие</button>
+            {{ end }}
+        </div>
+        {{ end }}
+    </div>
+
+    <!-- Подвал -->
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

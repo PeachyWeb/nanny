@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница администратора</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: white;
+            padding: 10px;
+        }
+
+    </style>
+    <script>
+        // Функция для переключения видимости списка сотрудников
+        function toggleUsers() {
+            var usersList = document.getElementById("usersList");
+            var button = document.getElementById("toggleButton");
+            
+            // Проверяем текущее состояние и меняем видимость
+            if (usersList.style.display === "none") {
+                usersList.style.display = "block";
+                button.innerText = "Скрыть всех сотрудников"; // Изменяем текст кнопки
+            } else {
+                usersList.style.display = "none";
+                button.innerText = "Показать всех сотрудников"; // Изменяем текст кнопки
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <h1>Добро пожаловать на админскую страницу!</h1>
+    <p>Здесь могут находиться функции и инструменты для администраторов.</p>
+
+    <h2>Изменить данные пользователя</h2>
+    <form action="/update_user" method="POST">
+        <label for="user_id">ID пользователя:</label>
+        <input type="text" id="user_id" name="user_id" required><br>
+
+        <label for="new_login">Новый логин:</label>
+        <input type="text" id="new_login" name="new_login"><br>
+
+        <label for="new_password">Новый пароль:</label>
+        <input type="password" id="new_password" name="new_password"><br>
+
+        <label for="new_role">Новая роль:</label>
+        <select id="new_role" name="new_role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+            <option value="nanny">Nanny</option>
+        </select><br><br>
+
+        <button type="submit">Обновить данные</button>
+    </form>
+
+    <h2>Список всех сотрудников</h2>
+
+    <!-- Сортировка -->
+    <form action="/admin/employees" method="GET">
+        <label for="sortBy">Сортировать по:</label>
+        <select id="sortBy" name="sortBy">
+            <option value="id">ID</option>
+            <option value="login">Логину</option>
+            <option value="role">Роли</option>
+        </select>
+        <button type="submit">Применить сортировку</button>
+    </form>
+
+    <!-- Кнопка для переключения видимости списка сотрудников -->
+    <button id="toggleButton" onclick="toggleUsers()">Показать всех сотрудников</button>
+
+    <!-- Список сотрудников, изначально скрыт -->
+    <div id="usersList" style="display: none;">
+        {{if .Users}} <!-- Проверяем наличие списка сотрудников -->
+        <h3>Сотрудники:</h3>
+        <ul>
+            {{range .Users}}
+            <li>ID: {{.IDuser}}, Логин: {{.UserName}}, Роль: {{.Role}}</li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>Список сотрудников еще не загружен.</p>
+        {{end}}
+    </div>
+    
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>

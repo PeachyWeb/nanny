@@ -2,217 +2,116 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-// Обработчик для страницы администратора
-func AdminPage(w http.ResponseWriter, r *http.Request) {
-	userIDStr := r.URL.Query().Get("id")
-	if userIDStr == "" {
-		http.Error(w, "ID пользователя не передан", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.Atoi(userIDStr)
+func getUserFromSession(r *http.Request) (int, string, string, error) {
+	session, err := store.Get(r, "session-name")
 	if err != nil {
-		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
-		return
+		return 0, "", "", err
 	}
 
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении имени пользователя из базы данных", http.StatusInternalServerError)
-		return
+	// Проверяем, если в сессии нет данных о пользователе
+	userID, ok := session.Values["userID"].(int)
+	if !ok {
+		return 0, "", "", http.ErrNoCookie
 	}
 
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении роли пользователя из базы данных", http.StatusInternalServerError)
-		return
+	userName, ok := session.Values["userName"].(string)
+	if !ok {
+		return 0, "", "", http.ErrNoCookie
 	}
 
-	data := struct {
-		UserID   int
-		UserName string
-		Role     string
-	}{
-		UserID:   userID,
-		UserName: userName,
-		Role:     role,
+	role, ok := session.Values["role"].(string)
+	if !ok {
+		return 0, "", "", http.ErrNoCookie
 	}
 
-	err = TmplAdmin.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
-	}
+	return userID, userName, role, nil
 }
 
-// Обработчик для страницы пользователя
-func UserPage(w http.ResponseWriter, r *http.Request) {
-	userIDStr := r.URL.Query().Get("id")
-	if userIDStr == "" {
-		http.Error(w, "ID пользователя не передан", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
-		return
-	}
-
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении имени пользователя из базы данных", http.StatusInternalServerError)
-		return
-	}
-
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении роли пользователя из базы данных", http.StatusInternalServerError)
-		return
-	}
-
-	data := struct {
-		UserID   int
-		UserName string
-		Role     string
-	}{
-		UserID:   userID,
-		UserName: userName,
-		Role:     role,
-	}
-
-	err = TmplMain.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// Обработчик для отображения списка сотрудников
-func AdminEmployeesPage(w http.ResponseWriter, r *http.Request) {
-	// Получаем список всех пользователей
-	users, err := GetAllUsers()
-	if err != nil {
-		http.Error(w, "Ошибка получения списка сотрудников: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Предположим, что текущий пользователь — это администратор, информация о котором нам также нужна
-	userIDStr := r.URL.Query().Get("id")
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
-		return
-	}
-
-	// Получаем информацию о текущем пользователе
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка получения имени пользователя: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка получения роли пользователя: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Подготовка данных для передачи в шаблон
-	data := struct {
-		UserID   int
-		UserName string
-		Role     string
-		Users    []User
-	}{
-		UserID:   userID,
-		UserName: userName,
-		Role:     role,
-		Users:    users,
-	}
-
-	// Выполняем рендеринг шаблона с обновленной структурой данных
-	err = TmplAdmin.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
-	}
-}
-func HomePage(w http.ResponseWriter, r *http.Request) {
-	// Получаем текущего пользователя (это нужно сделать после аутентификации)
-	var currentUser User
-	// Здесь вы должны получить информацию о текущем пользователе, например, из сессии или токена
-	// currentUser = GetCurrentUser(r) // Реализуйте получение текущего пользователя
-
-	// Передаем информацию о пользователе в шаблон
-	tmpl := ParseTemplate("templates/home.html")
-	tmpl.Execute(w, currentUser) // Передаем текущего пользователя в шаблон
-}
-
-func CatalogPage(w http.ResponseWriter, r *http.Request) {
-	// Получаем текущего пользователя через запрос (например, ID пользователя)
-	userIDStr := r.URL.Query().Get("id")
-	if userIDStr == "" {
-		http.Error(w, "ID пользователя не передан", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
-		return
-	}
-
-	// Получаем имя и роль пользователя из базы данных
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении имени пользователя из базы данных", http.StatusInternalServerError)
-		return
-	}
-
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении роли пользователя из базы данных", http.StatusInternalServerError)
-		return
-	}
-
+// parseFilters получает параметры фильтрации из URL-запроса и возвращает их в виде числовых значений.
+func parseFilters(r *http.Request) (int, int, int, error) {
 	// Получаем параметры фильтрации из URL-запроса
 	minExperienceStr := r.URL.Query().Get("min_experience")
 	maxPriceStr := r.URL.Query().Get("max_price")
 	minRatingStr := r.URL.Query().Get("min_rating")
 
-	// Преобразуем параметры в числовые значения (если они переданы)
+	var err error
 	var minExperience, maxPrice, minRating int
+
+	// Преобразуем параметры в числовые значения, если они переданы
 	if minExperienceStr != "" {
 		minExperience, err = strconv.Atoi(minExperienceStr)
 		if err != nil {
-			http.Error(w, "Неверный формат параметра min_experience", http.StatusBadRequest)
-			return
+			return 0, 0, 0, errors.New("Неверный формат параметра min_experience")
 		}
 	}
 
 	if maxPriceStr != "" {
 		maxPrice, err = strconv.Atoi(maxPriceStr)
 		if err != nil {
-			http.Error(w, "Неверный формат параметра max_price", http.StatusBadRequest)
-			return
+			return 0, 0, 0, errors.New("Неверный формат параметра max_price")
 		}
 	}
 
 	if minRatingStr != "" {
 		minRating, err = strconv.Atoi(minRatingStr)
 		if err != nil {
-			http.Error(w, "Неверный формат параметра min_rating", http.StatusBadRequest)
-			return
+			return 0, 0, 0, errors.New("Неверный формат параметра min_rating")
 		}
+	}
+
+	// Возвращаем значения параметров фильтрации
+	return minExperience, maxPrice, minRating, nil
+}
+
+func CatalogPage(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	// Получаем имя и роль пользователя из базы данных
+	userName, err := GetUserNameByIDFromDB(userID)
+	if err != nil {
+		log.Println("Ошибка при получении имени пользователя из базы данных:", err)
+		http.Error(w, "Ошибка при получении имени пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	role, err := GetUserRoleByIDFromDB(userID)
+	if err != nil {
+		log.Println("Ошибка при получении роли пользователя из базы данных:", err)
+		http.Error(w, "Ошибка при получении роли пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	// Получаем параметры фильтрации из URL-запроса
+	minExperience, maxPrice, minRating, err := parseFilters(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	// Получаем список нянь с учетом фильтров
 	nannies, err := GetNannies(Db, minExperience, maxPrice, minRating)
 	if err != nil {
-		http.Error(w, "Ошибка при получении нянь из базы данных: "+err.Error(), http.StatusInternalServerError)
+		log.Println("Ошибка при получении нянь из базы данных:", err)
+		http.Error(w, "Ошибка при получении нянь из базы данных", http.StatusInternalServerError)
 		return
 	}
 
@@ -228,27 +127,21 @@ func CatalogPage(w http.ResponseWriter, r *http.Request) {
 	tmpl := ParseTemplate("templates/upload1.html")
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
+		log.Println("Ошибка выполнения шаблона:", err)
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
 	}
 }
 
 func NannyPage(w http.ResponseWriter, r *http.Request) {
-	userIDStr := r.URL.Query().Get("id")
-	nannyIDStr := r.URL.Query().Get("nanny_id")
-
-	// Проверяем, передан ли ID пользователя
-	if userIDStr == "" {
-		http.Error(w, "ID пользователя не передан", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.Atoi(userIDStr)
+	// Получаем информацию о текущем пользователе из сессии
+	userID, userName, role, err := getUserFromSession(r)
 	if err != nil {
-		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
+		http.Error(w, "Не удалось получить данные пользователя из сессии", http.StatusUnauthorized)
 		return
 	}
 
 	// Проверяем, передан ли ID няни
+	nannyIDStr := r.URL.Query().Get("nanny_id")
 	if nannyIDStr == "" {
 		http.Error(w, "ID няни не передан", http.StatusBadRequest)
 		return
@@ -257,18 +150,6 @@ func NannyPage(w http.ResponseWriter, r *http.Request) {
 	nannyID, err := strconv.Atoi(nannyIDStr)
 	if err != nil {
 		http.Error(w, "Неверный идентификатор няни", http.StatusBadRequest)
-		return
-	}
-
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении имени пользователя из базы данных", http.StatusInternalServerError)
-		return
-	}
-
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении роли пользователя из базы данных", http.StatusInternalServerError)
 		return
 	}
 
@@ -318,8 +199,131 @@ func NannyPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Рендерим шаблон
-	err = TmplNanny.Execute(w, data)
-	if err != nil {
+	if err := TmplNanny.Execute(w, data); err != nil {
 		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// Обработчик для страницы пользователя
+func UserPage(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	userName, err := GetUserNameByIDFromDB(userID)
+	if err != nil {
+		log.Println("Ошибка при получении имени пользователя:", err)
+		http.Error(w, "Ошибка при получении имени пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	role, err := GetUserRoleByIDFromDB(userID)
+	if err != nil {
+		log.Println("Ошибка при получении роли пользователя:", err)
+		http.Error(w, "Ошибка при получении роли пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	// Подготавливаем данные для шаблона
+	data := struct {
+		UserID   int
+		UserName string
+		Role     string
+	}{
+		UserID:   userID,
+		UserName: userName,
+		Role:     role,
+	}
+
+	err = TmplMain.Execute(w, data)
+	if err != nil {
+		log.Println("Ошибка выполнения шаблона:", err)
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
+	}
+}
+
+func CalendarHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	// Fetch appointments from database
+	query := `SELECT nannyid, starttime, endtime FROM appointments WHERE userid = $1`
+	rows, err := Db.Query(query, userID)
+	if err != nil {
+		log.Println("Ошибка при запросе к appointments:", err)
+		http.Error(w, "Unable to retrieve calendar data", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var appointments []Appointment
+	for rows.Next() {
+		var app Appointment
+		if err := rows.Scan(&app.NannyID, &app.StartTime, &app.EndTime); err != nil {
+			log.Println("Ошибка при сканировании записи о встрече:", err)
+			http.Error(w, "Ошибка обработки данных", http.StatusInternalServerError)
+			return
+		}
+		appointments = append(appointments, app)
+	}
+
+	username, err := GetUserNameByID(userID)
+	if err != nil {
+		http.Error(w, "Ошибка получения данных пользователя из базы данных", http.StatusInternalServerError)
+		return
+	}
+
+	// Calculate busy days
+	busyDays := make(map[int]bool)
+	for _, app := range appointments {
+		day := app.StartTime.Day()
+		busyDays[day] = true
+	}
+
+	// Prepare data for template
+	data := struct {
+		UserID   int          // Используем int вместо string
+		UserName string       // Имя пользователя
+		Days     []int        // Дни месяца
+		BusyDays map[int]bool // Занятые дни
+	}{
+		UserID:   userID, // Извлекаем int userID
+		UserName: username,
+		Days:     make([]int, 31),
+		BusyDays: busyDays,
+	}
+
+	for i := range data.Days {
+		data.Days[i] = i + 1
+	}
+
+	// Execute the template
+	err = TmplCalendar.Execute(w, data)
+	if err != nil {
+		log.Println("Ошибка при выполнении шаблона:", err)
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
 	}
 }

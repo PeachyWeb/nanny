@@ -35,6 +35,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
+        
         footer {
             position: fixed;
             bottom: 0;
@@ -52,7 +53,7 @@
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="/main?id={{ .UserID }}">Nanny Market</a>
+            <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -60,31 +61,26 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/main?id={{ .UserID }}">Главная</a>
+                        <a class="nav-link" href="/main">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/calendar?id={{ .UserID }}">Календарь</a>
+                        <a class="nav-link" href="/calendar">Календарь</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <h1>{{ .Nanny.Name }}</h1>
-    <p>Experience: {{ .Nanny.Experience }}</p>
-    <p>Phone: {{ .Nanny.Phone }}</p>
-    <p>Средний рейтинг: {{ .Nanny.AverageRating }}</p>
-    <p>Description: {{ .Nanny.Description }}</p>
-    <p>Price: {{ .Nanny.Price }}</p>
-    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}">
-
+    <h1>{{ .Nanny.Name }}</h1> <!-- Изменено на отображение только ID -->
+    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}" class="img-fluid mb-4"> <!-- Фотография няни -->
+    
     <h2 class="mt-4">Оформить найм няни</h2>
     <form action="/hire_nanny" method="POST" class="mb-4">
         <input type="hidden" name="user_id" value="{{ .UserID }}">
-        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}">
+        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Изменено на .Nanny.ID -->
 
         <div class="mb-3">
             <label for="start_time" class="form-label">Время начала:</label>
@@ -99,25 +95,22 @@
         <button type="submit" class="btn btn-success">Нанять няню</button>
     </form>
 
-
     <h2>Оставить отзыв</h2>
     <form action="/add_review" method="POST">
-        <input type="hidden" name="user_id" value="{{ .UserID }}">
-        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Исправлено на .Nanny.ID -->
-        
+        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Изменено на .Nanny.ID -->
+
         <div>
             <label for="rating">Рейтинг (1-5):</label>
             <input type="number" id="rating" name="rating" min="1" max="5" required>
         </div>
-        
+
         <div>
             <label for="comment">Комментарий:</label>
             <textarea id="comment" name="comment"></textarea>
         </div>
-        
+
         <button type="submit" class="btn btn-primary">Оставить отзыв</button>
     </form>
-
 
     <h2>Отзывы</h2>
     {{ if .Reviews }}
@@ -133,7 +126,6 @@
     {{ else }}
         <p>Пока нет отзывов</p>
     {{ end }}
-
 
     <footer class="bg-light py-3 text-center mt-auto">
         <div class="container">

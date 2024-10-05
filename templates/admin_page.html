@@ -44,12 +44,28 @@
         }
 
     </style>
+    <script>
+        // Функция для переключения видимости списка сотрудников
+        function toggleUsers() {
+            var usersList = document.getElementById("usersList");
+            var button = document.getElementById("toggleButton");
+            
+            // Проверяем текущее состояние и меняем видимость
+            if (usersList.style.display === "none") {
+                usersList.style.display = "block";
+                button.innerText = "Скрыть всех сотрудников"; // Изменяем текст кнопки
+            } else {
+                usersList.style.display = "none";
+                button.innerText = "Показать всех сотрудников"; // Изменяем текст кнопки
+            }
+        }
+    </script>
 </head>
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="/main?id={{ .UserID }}">Nanny Market</a>
+            <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -57,18 +73,19 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/main?id={{ .UserID }}">Главная</a>
+                        <a class="nav-link" href="/main">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/calendar?id={{ .UserID }}">Календарь</a>
+                        <a class="nav-link" href="/calendar">Календарь</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+    
     <h1>Добро пожаловать на админскую страницу!</h1>
     <p>Здесь могут находиться функции и инструменты для администраторов.</p>
 
@@ -94,25 +111,39 @@
     </form>
 
     <h2>Список всех сотрудников</h2>
+
+    <!-- Сортировка -->
     <form action="/admin/employees" method="GET">
-        <input type="hidden" name="id" value="{{ .UserID }}">
-        <button type="submit">Показать всех сотрудников</button>
+        <label for="sortBy">Сортировать по:</label>
+        <select id="sortBy" name="sortBy">
+            <option value="id">ID</option>
+            <option value="login">Логину</option>
+            <option value="role">Роли</option>
+        </select>
+        <button type="submit">Применить сортировку</button>
     </form>
-    {{if .Users}} <!-- Проверяем наличие списка сотрудников -->
-    <h3>Сотрудники:</h3>
-    <ul>
-        {{range .Users}}
-        <li>ID: {{.IDuser}}, Логин: {{.Login}}, Роль: {{.Role}}</li>
+
+    <!-- Кнопка для переключения видимости списка сотрудников -->
+    <button id="toggleButton" onclick="toggleUsers()">Показать всех сотрудников</button>
+
+    <!-- Список сотрудников, изначально скрыт -->
+    <div id="usersList" style="display: none;">
+        {{if .Users}} <!-- Проверяем наличие списка сотрудников -->
+        <h3>Сотрудники:</h3>
+        <ul>
+            {{range .Users}}
+            <li>ID: {{.IDuser}}, Логин: {{.UserName}}, Роль: {{.Role}}</li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>Список сотрудников еще не загружен.</p>
         {{end}}
-    </ul>
-    {{else}}
-    <p>Список сотрудников еще не загружен.</p>
-    {{end}}
+    </div>
+    
     <footer class="bg-light py-3 text-center mt-auto">
         <div class="container">
             <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
         </div>
     </footer>
-    
 </body>
 </html>

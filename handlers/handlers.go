@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
 
@@ -75,26 +76,103 @@ var TmplNanny = template.Must(template.ParseFiles("templates/nanny_page.html"))
 var TmplEditNanny = template.Must(template.ParseFiles("templates/edit_nanny.html"))
 var TmplHome = template.Must(template.ParseFiles("templates/home.html"))
 var TmplCalendar = template.Must(template.ParseFiles("templates/calendar.html"))
+var TmplProfile = template.Must(template.ParseFiles("templates/profile.html"))
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
 	if r.Method == http.MethodPost {
-		userIDStr := r.FormValue("id")
+		// Получение данных из формы
+		targetUserIDStr := r.FormValue("user_id")
+		targetUserID, err := strconv.Atoi(targetUserIDStr)
+		if err != nil {
+			http.Error(w, "Некорректный ID пользователя", http.StatusBadRequest)
+			return
+		}
+
+		newLogin := r.FormValue("new_login")
+		newPassword := r.FormValue("new_password")
 		newRole := r.FormValue("new_role")
 
-		userID, err := strconv.Atoi(userIDStr)
+		// Проверяем, существует ли пользователь с указанным ID
+		var existingUserID int
+		err = Db.QueryRow("SELECT id FROM users WHERE id = $1", targetUserID).Scan(&existingUserID)
 		if err != nil {
-			http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
+			if err == sql.ErrNoRows {
+				http.Error(w, "Пользователь с указанным ID не найден", http.StatusNotFound)
+			} else {
+				log.Println("Ошибка при проверке пользователя:", err)
+				http.Error(w, "Ошибка при проверке пользователя", http.StatusInternalServerError)
+			}
 			return
 		}
 
-		query := "UPDATE users SET role = $1 WHERE id = $2"
-		_, err = Db.Exec(query, newRole, userID)
-		if err != nil {
-			http.Error(w, "Ошибка при обновлении роли пользователя", http.StatusInternalServerError)
+		// Начинаем создание запроса на обновление
+		updateFields := []string{}
+		args := []interface{}{}
+		argCounter := 1
+
+		// Добавляем новые значения, если они указаны
+		if newLogin != "" {
+			updateFields = append(updateFields, "login = $"+strconv.Itoa(argCounter))
+			args = append(args, newLogin)
+			argCounter++
+		}
+
+		if newPassword != "" {
+			hashedPassword, hashErr := HashPassword(newPassword)
+			if hashErr != nil {
+				log.Println("Ошибка при хешировании пароля:", hashErr)
+				http.Error(w, "Ошибка при обновлении пароля", http.StatusInternalServerError)
+				return
+			}
+			updateFields = append(updateFields, "password = $"+strconv.Itoa(argCounter))
+			args = append(args, hashedPassword)
+			argCounter++
+		}
+
+		if newRole != "" {
+			updateFields = append(updateFields, "role = $"+strconv.Itoa(argCounter))
+			args = append(args, newRole)
+			argCounter++
+		}
+
+		// Проверяем, есть ли что обновлять
+		if len(updateFields) == 0 {
+			http.Error(w, "Нет данных для обновления", http.StatusBadRequest)
 			return
 		}
+
+		// Собираем полный запрос
+		query := "UPDATE users SET " + strings.Join(updateFields, ", ") + " WHERE id = $" + strconv.Itoa(argCounter)
+		args = append(args, targetUserID)
+
+		// Выполняем запрос
+		_, err = Db.Exec(query, args...)
+		if err != nil {
+			log.Println("Ошибка при обновлении данных пользователя:", err)
+			http.Error(w, "Ошибка при обновлении данных пользователя", http.StatusInternalServerError)
+			return
+		}
+
+		// Перенаправляем после успешного обновления
 		http.Redirect(w, r, "/admin/employees", http.StatusFound)
+	} else {
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	}
 }
 
@@ -108,6 +186,21 @@ func ParseTemplate(filename string) *template.Template {
 }
 
 func NannyHandler(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
 	// Получаем идентификатор няни из URL
 	idNanny := r.URL.Query().Get("nanny_id")
 	if idNanny == "" {
@@ -116,11 +209,21 @@ func NannyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Получаем информацию о няне из базы данных
-	query := "SELECT id, name, experience, phone, description, price, photo_url, average_rating, review_count FROM nannies WHERE id = $1"
+	query := "SELECT id, name, experience, phone, average_rating, description, price, photo_url FROM nannies WHERE id = $1"
 	row := Db.QueryRow(query, idNanny)
 
-	var nanny Nanny
-	err := row.Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.Description, &nanny.Price, &nanny.PhotoURL, &nanny.AverageRating, &nanny.ReviewCount)
+	var nanny struct {
+		ID            int
+		Name          string
+		Experience    string
+		Phone         string
+		AverageRating float64
+		Description   string
+		Price         float64
+		PhotoURL      string
+	}
+
+	err = row.Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.AverageRating, &nanny.Description, &nanny.Price, &nanny.PhotoURL)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Nanny not found", http.StatusNotFound)
@@ -130,18 +233,6 @@ func NannyHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Server error", http.StatusInternalServerError)
 			return
 		}
-	}
-
-	// Получаем UserID из параметров запроса
-	userIDStr := r.URL.Query().Get("user_id")
-	if userIDStr == "" {
-		http.Error(w, "Missing user ID", http.StatusBadRequest)
-		return
-	}
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
-		return
 	}
 
 	userName, err := GetUserNameByIDFromDB(userID)
@@ -156,20 +247,65 @@ func NannyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Получение отзывов о няне
-	reviews, err := GetReviewsByNannyID(nanny.ID)
+	// Получаем отзывы о няне
+	reviewQuery := "SELECT user_id, rating, comment, created_at FROM reviews WHERE nanny_id = $1"
+	rows, err := Db.Query(reviewQuery, nanny.ID)
 	if err != nil {
-		http.Error(w, "Error getting reviews from database", http.StatusInternalServerError)
+		log.Println("Error querying reviews:", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
+	}
+	defer rows.Close()
+
+	var reviews []struct {
+		UserID    int
+		Rating    float64
+		Comment   string
+		CreatedAt string
+	}
+
+	for rows.Next() {
+		var review struct {
+			UserID    int
+			Rating    float64
+			Comment   string
+			CreatedAt string
+		}
+		if err := rows.Scan(&review.UserID, &review.Rating, &review.Comment, &review.CreatedAt); err != nil {
+			log.Println("Error scanning review:", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+		reviews = append(reviews, review)
 	}
 
 	// Создаем структуру для передачи в шаблон
-	pageData := NannyDetailPage{
+	pageData := struct {
+		UserID   int
+		UserName string
+		Role     string
+		Nanny    struct {
+			ID            int
+			Name          string
+			Experience    string
+			Phone         string
+			AverageRating float64
+			Description   string
+			Price         float64
+			PhotoURL      string
+		}
+		Reviews []struct {
+			UserID    int
+			Rating    float64
+			Comment   string
+			CreatedAt string
+		}
+	}{
 		UserID:   userID,
 		UserName: userName,
 		Role:     role,
 		Nanny:    nanny,
-		Reviews:  reviews, // Добавляем отзывы в структуру
+		Reviews:  reviews,
 	}
 
 	// Рендерим шаблон с данными
@@ -213,34 +349,46 @@ func UpdateNannyHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Перенаправление обратно на страницу с каталогом или панелью
-		http.Redirect(w, r, "/nanny_page?id="+nannyID, http.StatusFound)
+		http.Redirect(w, r, "/edit_nanny", http.StatusFound)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
 
-// Handler для редактирования профиля няни
 func EditNannyHandler(w http.ResponseWriter, r *http.Request) {
-	userIDStr := r.URL.Query().Get("id")
-	if userIDStr == "" {
-		http.Error(w, "User ID not provided", http.StatusBadRequest)
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
 		return
 	}
 
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
 		return
 	}
+
+	// Выводим userID для отладки
+	log.Print("UserID:", userID)
+
+	// Предполагается, что ID няни передается через URL или форму,
+	// например, вы можете получить его через параметр URL, например /edit_nanny?id=1
 
 	// Получение данных о няне из базы данных
 	nanny, err := GetNannyByID(userID)
 	if err != nil {
-		http.Error(w, "Error getting nanny data from database", http.StatusInternalServerError)
+		if err == sql.ErrNoRows {
+			http.Error(w, "Няня не найдена", http.StatusNotFound)
+			return
+		}
+		log.Println("Ошибка получения данных о няне:", err)
+		http.Error(w, "Ошибка получения данных о няне", http.StatusInternalServerError)
 		return
 	}
 
-	// Отправка данных в шаблон редактирования профиля
+	// Отправка данных в шаблон редактирования
 	data := struct {
 		UserID int
 		Nanny  Nanny
@@ -252,28 +400,44 @@ func EditNannyHandler(w http.ResponseWriter, r *http.Request) {
 	// Замените "templates/edit_nanny.html" на ваш путь к шаблону
 	err = TmplEditNanny.Execute(w, data)
 	if err != nil {
-		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 
+func GetNannyByID(nannyID int) (Nanny, error) {
+	var nanny Nanny
+	err := Db.QueryRow("SELECT id, name, experience, phone, description, price, photo_url, average_rating, review_count FROM nannies WHERE id = $1", nannyID).
+		Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.Description, &nanny.Price, &nanny.PhotoURL, &nanny.AverageRating, &nanny.ReviewCount)
+	if err != nil {
+		return nanny, err // Возвращаем пустую структуру и ошибку
+	}
+	return nanny, nil // Возвращаем заполненную структуру и nil
+}
+
 func AddReviewHandler(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Получаем данные из формы
-	userIDStr := r.FormValue("user_id")
+	// Получаем данные из форм
 	nannyIDStr := r.FormValue("nanny_id")
 	ratingStr := r.FormValue("rating")
 	comment := r.FormValue("comment")
-
-	// Преобразование данных
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
-		return
-	}
 
 	nannyID, err := strconv.Atoi(nannyIDStr)
 	if err != nil {
@@ -303,7 +467,7 @@ func AddReviewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Перенаправление на страницу профиля няни
-	http.Redirect(w, r, fmt.Sprintf("/nanny/details?user_id=%d&nanny_id=%d", userID, nannyID), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/nanny/details?nanny_id=%d", nannyID), http.StatusSeeOther)
 }
 
 func UpdateNannyRating(nannyID int) error {
@@ -350,112 +514,23 @@ func CalculateAverageRating(ratings []float64) float64 {
 	return total / float64(len(ratings))
 }
 
-/*
-// isDayBusy проверяет, занят ли указанный день
-
-	func isDayBusy(day int, appointments []Appointment) bool {
-		for _, app := range appointments {
-			if app.StartTime.Day() == day {
-				return true
-			}
-		}
-		return false
-	}
-*/
-
-/*func init() {
-	// Parse templates
-	TmplCalendar = template.Must(template.New("calendar.html").Funcs(template.FuncMap{
-		"isDayBusy": isDayBusy,
-	}).ParseFiles("calendar.html"))
-}*/
-
-// isDayBusy checks if a given day is busy based on the list of appointments.
-/*func isDayBusy(day int, appointments []Appointment) bool {
-	for _, app := range appointments {
-		if app.StartTime.Day() == day {
-			return true
-		}
-	}
-	return false
-}*/
-
-// CalendarHandler обрабатывает запросы на страницу календаря
-
-func CalendarHandler(w http.ResponseWriter, r *http.Request) {
-	userIDStr := r.URL.Query().Get("id")
-	if userIDStr == "" {
-		http.Error(w, "User ID not provided", http.StatusBadRequest)
-		return
-	}
-
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
-		return
-	}
-
-	// Fetch appointments from database
-	query := `SELECT nannyid, starttime, endtime FROM appointments WHERE userid = $1`
-	rows, err := Db.Query(query, userID)
-	if err != nil {
-		log.Println("Error querying appointments:", err)
-		http.Error(w, "Unable to retrieve calendar data", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var appointments []Appointment
-	for rows.Next() {
-		var app Appointment
-		if err := rows.Scan(&app.NannyID, &app.StartTime, &app.EndTime); err != nil {
-			log.Println("Error scanning appointment:", err)
-			http.Error(w, "Error processing data", http.StatusInternalServerError)
-			return
-		}
-		appointments = append(appointments, app)
-	}
-
-	username, err := GetUserNameByID(userID)
-	if err != nil {
-		http.Error(w, "Error getting user data from database", http.StatusInternalServerError)
-		return
-	}
-	// Calculate busy days
-	busyDays := make(map[int]bool)
-	for _, app := range appointments {
-		day := app.StartTime.Day()
-		busyDays[day] = true
-	}
-
-	// Prepare data for template
-	data := struct {
-		UserID   string
-		UserName string
-		Days     []int
-		BusyDays map[int]bool
-	}{
-		UserID:   userIDStr,
-		UserName: username,
-		Days:     make([]int, 31),
-		BusyDays: busyDays,
-	}
-
-	for i := range data.Days {
-		data.Days[i] = i + 1
-	}
-
-	// Execute the template
-	err = TmplCalendar.Execute(w, data)
-	if err != nil {
-		log.Println("Error executing template:", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
-	}
-}
-
 func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
+	//Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
 	if r.Method == http.MethodPost {
-		userID := r.FormValue("user_id")
+
 		nannyID := r.FormValue("nanny_id")
 		startTime := r.FormValue("start_time")
 		endTime := r.FormValue("end_time")
@@ -489,7 +564,7 @@ func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Перенаправление пользователя на страницу календаря после успешного добавления записи
-		http.Redirect(w, r, "/calendar?id="+userID, http.StatusSeeOther)
+		http.Redirect(w, r, "/calendar", http.StatusSeeOther)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}

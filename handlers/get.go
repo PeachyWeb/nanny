@@ -69,13 +69,6 @@ func GetReviewsByNannyID(nannyID int) ([]Review, error) {
 	return reviews, nil
 }
 
-func GetNannyByID(nannyID int) (Nanny, error) {
-	var nanny Nanny
-	err := Db.QueryRow("SELECT id, name, experience, phone, description, price, photo_url, average_rating, review_count FROM nannies WHERE id = $1", nannyID).
-		Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.Description, &nanny.Price, &nanny.PhotoURL, &nanny.AverageRating, &nanny.ReviewCount)
-	return nanny, err
-}
-
 // Получаем рейтинги для конкретной няни
 func GetRatingsForNanny(nannyID int) ([]float64, error) {
 	var ratings []float64
@@ -95,7 +88,7 @@ func GetRatingsForNanny(nannyID int) ([]float64, error) {
 	return ratings, nil
 }
 
-// Получаем имя пользователя по ID из базы данных
+/*// Получаем имя пользователя по ID из базы данных
 func GetUserNameByIDFromDB(userID int) (string, error) {
 	var userName string
 	query := "SELECT login FROM users WHERE id = $1"
@@ -117,7 +110,7 @@ func GetUserRoleByIDFromDB(userID int) (string, error) {
 		return "", err
 	}
 	return role, nil
-}
+}*/
 
 // / Получаем список всех пользователей
 func GetAllUsers() ([]User, error) {
@@ -207,4 +200,24 @@ func GetUserNameByID(userID int) (string, error) {
 		return "", err
 	}
 	return login, nil
+}
+
+func GetUserRoleByIDFromDB(userID int) (string, error) {
+	var role string
+	query := "SELECT role FROM users WHERE id = $1"
+	err := Db.QueryRow(query, userID).Scan(&role)
+	if err != nil {
+		return "", err
+	}
+	return role, nil
+}
+
+func GetUserNameByIDFromDB(userID int) (string, error) {
+	var userName string
+	query := "SELECT login FROM users WHERE id = $1"
+	err := Db.QueryRow(query, userID).Scan(&userName)
+	if err != nil {
+		return "", err
+	}
+	return userName, nil
 }

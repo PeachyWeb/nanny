@@ -27,7 +27,6 @@ func main() {
 
 	// Маршруты
 	http.HandleFunc("/register", handlers.RegisterHandler) // Обработчик для регистрации
-	http.HandleFunc("/home", handlers.HomePage)            // Обработчик для домашней страницы
 	http.HandleFunc("/catalog", handlers.CatalogPage)      // Обработчик для каталога нянь
 
 	// Дополнительные маршруты для функционала
@@ -37,7 +36,7 @@ func main() {
 	http.HandleFunc("/add_review", handlers.AddReviewHandler) // Обработчик для добавления отзыва
 
 	http.HandleFunc("/login/google", handlers.GoogleLoginHandler)
-	http.HandleFunc("/callback", handlers.GoogleCallbackHandler)
+	http.HandleFunc("/callback/google", handlers.GoogleCallbackHandler)
 
 	log.Println("Сервер запущен на порту :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

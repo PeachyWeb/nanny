@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,39 +35,54 @@
         }
     </style>
 </head>
+
 <body>
-
-<!-- Верхнее меню -->
-<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-    <h5 class="my-0 mr-md-auto font-weight-normal">Nanny Market</h5>
-    <nav class="my-2 my-md-0 mr-md-3">
-        <a class="p-2 text-dark" href="/main?id={{ .UserID }}">Главная</a>
-        <a class="p-2 text-dark" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
-        <a class="p-2 text-dark" href="/calendar?id={{ .UserID }}">Календарь</a>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
-</div>
 
-<h1>Календарь пользователя {{ .UserName }}</h1>
+    <h1>Календарь пользователя {{ .UserName }}</h1>
 
-<div class="calendar">
-    {{ range .Days }}
+    <div class="calendar">
+        {{ range .Days }}
         <div class="day {{ if index $.BusyDays . }}busy{{ else }}free{{ end }}">
             <strong>День {{ . }}</strong><br>
             {{ if index $.BusyDays . }}
-                <span>Занят</span>
+            <span>Занят</span>
             {{ else }}
-                <button class="btn btn-info">Добавить событие</button>
+            <button class="btn btn-info">Добавить событие</button>
             {{ end }}
         </div>
-    {{ end }}
-</div>
-
-<!-- Подвал -->
-<footer class="bg-light py-3 text-center mt-auto">
-    <div class="container">
-        <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        {{ end }}
     </div>
-</footer>
+
+    <!-- Подвал -->
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
 
 </body>
+
 </html>

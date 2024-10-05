@@ -52,7 +52,7 @@
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="/main?id={{ .UserID }}">Nanny Market</a>
+            <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -60,13 +60,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/main?id={{ .UserID }}">Главная</a>
+                        <a class="nav-link" href="/main">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/catalog?id={{ .UserID }}">Каталог нянь</a>
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/calendar?id={{ .UserID }}">Календарь</a>
+                        <a class="nav-link" href="/calendar">Календарь</a>
                     </li>
                 </ul>
             </div>
@@ -106,7 +106,7 @@
             <div class="col-12 col-md-6 col-lg-4 nanny-card" data-experience="{{ .Experience }}"
                 data-price="{{ .Price }}" data-rating="{{ .AverageRating }}">
                 <div class="card h-100 shadow-sm">
-                    <a href="/nanny/details?user_id={{$.UserID}}&nanny_id={{.ID}}" class="stretched-link text-decoration-none text-dark">
+                    <a href="/nanny/details?nanny_id={{.ID}}" class="stretched-link text-decoration-none text-dark">
                         <img src="{{ .PhotoURL }}" class="card-img-top" alt="Фото няни">
                         <div class="card-body">
                             <h5 class="card-title">{{ .Name }}</h5>

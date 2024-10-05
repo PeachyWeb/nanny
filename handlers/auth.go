@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -16,9 +17,56 @@ import (
 
 var (
 	googleOauthConfig *oauth2.Config
-	vkOauthConfig     *oauth2.Config
 	oauthStateString  = "randomstring" // Используется для предотвращения CSRF-атак
+	store             = sessions.NewCookieStore([]byte("super-secret-key"))
 )
+
+// Функция для обработки главной страницы и аутентификации
+func Home(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		TmplRegister.Execute(w, nil)
+	} else if r.Method == http.MethodPost {
+		login := r.FormValue("login")
+		password := r.FormValue("password")
+
+		id := AuthenticateUser(r.Context(), login, password)
+		if id == -1 {
+			log.Println("Ошибка аутентификации: неверный пароль")
+			http.ServeFile(w, r, "templates/errorModal.html")
+		} else if id > 0 {
+			log.Printf("Успешная аутентификация для пользователя с ID: %d", id)
+			// Создаем и сохраняем сессию
+			session, _ := store.Get(r, "session-name")
+			session.Values["userID"] = id
+			session.Save(r, w)
+
+			http.Redirect(w, r, "/main", http.StatusFound)
+		} else {
+			log.Println("Регистрация нового пользователя")
+			hashedPassword, err := HashPassword(password)
+			if err != nil {
+				http.Error(w, "Ошибка при хешировании пароля", http.StatusInternalServerError)
+				return
+			}
+
+			query := "INSERT INTO users (login, password, role) VALUES ($1, $2, 'user') RETURNING id"
+			var newUserID int
+			err = Db.QueryRow(query, login, hashedPassword).Scan(&newUserID)
+			if err != nil {
+				http.Error(w, "Ошибка при регистрации пользователя", http.StatusInternalServerError)
+				return
+			}
+
+			log.Printf("Пользователь успешно зарегистрирован с ID: %d", newUserID)
+			// Создаем и сохраняем сессию
+			session, _ := store.Get(r, "session-name")
+			session.Values["userID"] = newUserID
+			session.Save(r, w)
+
+			http.Redirect(w, r, "/main", http.StatusFound)
+		}
+	}
+}
 
 func init() {
 	// Проверка переменных окружения
@@ -38,35 +86,8 @@ func init() {
 		},
 		Endpoint: google.Endpoint,
 	}
+
 }
-
-/*
-	func init() {
-		// Инициализация конфигурации Google OAuth
-		googleOauthConfig = &oauth2.Config{
-			RedirectURL:  "http://localhost:8080/callback",  // URL для обратного вызова Google
-			ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),     // Ваш ID клиента Google
-			ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"), // Ваш секрет клиента Google
-			Scopes: []string{
-				"https://www.googleapis.com/auth/userinfo.profile",
-				"https://www.googleapis.com/auth/userinfo.email",
-			},
-			Endpoint: google.Endpoint,
-		}
-
-		// Инициализация конфигурации VK OAuth
-		vkOauthConfig = &oauth2.Config{
-			ClientID:     os.Getenv("VK_CLIENT_ID"),           // Ваш ID клиента VK
-			ClientSecret: os.Getenv("VK_CLIENT_SECRET"),       // Ваш секрет клиента VK
-			RedirectURL:  "http://localhost:8080/callback/vk", // URL для обратного вызова VK
-			Scopes:       []string{"email"},                   // Запрашиваемые разрешения
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  "https://oauth.vk.com/authorize",
-				TokenURL: "https://oauth.vk.com/access_token",
-			},
-		}
-	}
-*/
 
 // Функция для открытия базы данных
 func OpenDatabase() {
@@ -85,7 +106,8 @@ func OpenDatabase() {
 // Обработчик для регистрации
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		TmplRegister.Execute(w, nil)
+		// Здесь можно отобразить страницу регистрации
+		// TmplRegister.Execute(w, nil) // Здесь нужно использовать ваш шаблон
 	} else if r.Method == http.MethodPost {
 		err := r.ParseForm()
 		if err != nil {
@@ -101,13 +123,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		query := "INSERT INTO users (login, password, role) VALUES ($1, $2, 'user')"
-		_, err = Db.Exec(query, login, hashedPassword)
+		query := "INSERT INTO users (login, password, role) VALUES ($1, $2, 'user') RETURNING id"
+		var newUserID int
+		err = Db.QueryRow(query, login, hashedPassword).Scan(&newUserID)
 		if err != nil {
 			http.Error(w, "Ошибка при вставке пользователя", http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/", http.StatusFound)
+
+		http.Redirect(w, r, "/main?id="+strconv.Itoa(newUserID), http.StatusFound)
 		return
 	}
 }
@@ -145,42 +169,6 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func Home(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		TmplRegister.Execute(w, nil)
-	} else if r.Method == http.MethodPost {
-		login := r.FormValue("login")
-		password := r.FormValue("password")
-
-		id := AuthenticateUser(r.Context(), login, password)
-		if id == -1 {
-			log.Println("Ошибка аутентификации: неверный пароль")
-			http.ServeFile(w, r, "templates/errorModal.html")
-		} else if id > 0 {
-			log.Printf("Успешная аутентификация для пользователя с ID: %d", id)
-			http.Redirect(w, r, "/main?id="+strconv.Itoa(id), http.StatusFound)
-		} else {
-			log.Println("Регистрация нового пользователя")
-			hashedPassword, err := HashPassword(password)
-			if err != nil {
-				http.Error(w, "Ошибка при хешировании пароля", http.StatusInternalServerError)
-				return
-			}
-
-			query := "INSERT INTO users (login, password, role) VALUES ($1, $2, 'user') RETURNING id"
-			var newUserID int
-			err = Db.QueryRow(query, login, hashedPassword).Scan(&newUserID)
-			if err != nil {
-				http.Error(w, "Ошибка при регистрации пользователя", http.StatusInternalServerError)
-				return
-			}
-
-			log.Printf("Пользователь успешно зарегистрирован с ID: %d", newUserID)
-			http.Redirect(w, r, "/main?id="+strconv.Itoa(newUserID), http.StatusFound)
-		}
-	}
-}
-
 // Google OAuth Handlers
 func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Запрос к GoogleLoginHandler: %s %s", r.Method, r.URL.Path)
@@ -191,12 +179,15 @@ func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Запрос к GoogleCallbackHandler: %s %s", r.Method, r.URL.Path)
+
+	// Проверка состояния для защиты от CSRF-атак
 	if r.FormValue("state") != oauthStateString {
 		http.Error(w, "state invalid", http.StatusBadRequest)
 		log.Println("Некорректное значение state")
 		return
 	}
 
+	// Обмен кода на токен
 	token, err := googleOauthConfig.Exchange(context.Background(), r.FormValue("code"))
 	if err != nil {
 		log.Println("Не удалось получить токен:", err)
@@ -204,6 +195,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Получение информации о пользователе
 	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
 		http.Error(w, "Не удалось получить информацию о пользователе", http.StatusInternalServerError)
@@ -226,7 +218,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Пользователь аутентифицирован: %v", userInfo)
 
-	// Проверьте пользователя в базе данных и, если он не существует, создайте его
+	// Проверяем пользователя в базе данных и создаем нового, если его нет
 	var userID int
 	query := "SELECT id FROM users WHERE login = $1"
 	err = Db.QueryRow(query, userInfo.Email).Scan(&userID)
@@ -247,31 +239,60 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/main?id="+strconv.Itoa(userID), http.StatusFound)
+	// Устанавливаем значение сессии для текущего пользователя
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+	session.Values["userID"] = userID // Устанавливаем ID пользователя в сессию
+	if err := session.Save(r, w); err != nil {
+		http.Error(w, "Ошибка при сохранении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/main", http.StatusFound)
 }
 
 // Обработчик главной страницы
 func Index(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Запрос к Index: %s %s", r.Method, r.URL.Path)
-	userIDStr := r.URL.Query().Get("id")
-	userID, err := strconv.Atoi(userIDStr)
+	log.Printf("Запрос к Index: %s %s", r.Method, r.URL.Path) // Логируем сам запрос
+
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
 	if err != nil {
-		http.Error(w, "Неверный идентификатор пользователя", http.StatusBadRequest)
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
 		return
 	}
 
+	// Проверяем, сохранен ли идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		log.Println("Попытка доступа к главной странице без авторизации.")
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	// Получаем имя пользователя
 	userName, err := GetUserNameByIDFromDB(userID)
 	if err != nil {
+		log.Printf("Ошибка при получении имени пользователя из базы данных для ID %d: %v", userID, err)
 		http.Error(w, "Ошибка при получении имени пользователя из базы данных", http.StatusInternalServerError)
 		return
 	}
 
+	// Получаем роль пользователя
 	role, err := GetUserRoleByIDFromDB(userID)
 	if err != nil {
+		log.Printf("Ошибка при получении роли пользователя из базы данных для ID %d: %v", userID, err)
 		http.Error(w, "Ошибка при получении роли пользователя из базы данных", http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("Пользователь с ID %d успешно получил доступ к главной странице. Имя: %s, Роль: %s", userID, userName, role)
+
+	// Подготавливаем данные для шаблона
 	data := struct {
 		UserID   int
 		UserName string
@@ -282,75 +303,12 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		Role:     role,
 	}
 
+	// Выполняем шаблон главной страницы с данными пользователя
 	err = TmplHome.Execute(w, data)
 	if err != nil {
+		log.Printf("Ошибка выполнения шаблона для пользователя %d: %v", userID, err)
 		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
 	}
 }
-func VKLoginHandler(w http.ResponseWriter, r *http.Request) {
-	url := vkOauthConfig.AuthCodeURL(oauthStateString)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
 
-func VKCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("state") != oauthStateString {
-		http.Error(w, "state invalid", http.StatusBadRequest)
-		return
-	}
-
-	token, err := vkOauthConfig.Exchange(context.Background(), r.FormValue("code"))
-	if err != nil {
-		log.Println("Не удалось получить токен:", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		return
-	}
-
-	// Используем токен для запроса информации о пользователе
-	client := vkOauthConfig.Client(context.Background(), token)
-	resp, err := client.Get("https://api.vk.com/method/users.get?fields=email&access_token=" + token.AccessToken + "&v=5.131")
-	if err != nil {
-		http.Error(w, "Не удалось получить информацию о пользователе", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	var userInfo struct {
-		Response []struct {
-			ID    int    `json:"id"`
-			Email string `json:"email"`
-		} `json:"response"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-		http.Error(w, "Не удалось декодировать ответ от VK", http.StatusInternalServerError)
-		return
-	}
-
-	if len(userInfo.Response) == 0 {
-		http.Error(w, "Не удалось получить информацию о пользователе", http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("Пользователь аутентифицирован: %+v", userInfo.Response[0])
-
-	// Проверяем пользователя в базе данных и создаем нового, если его нет
-	var userID int
-	query := "SELECT id FROM users WHERE login = $1"
-	err = Db.QueryRow(query, userInfo.Response[0].Email).Scan(&userID)
-
-	if err == sql.ErrNoRows {
-		// Пользователь не существует, создаем нового
-		query = "INSERT INTO users (login, password, role) VALUES ($1, '', 'user') RETURNING id"
-		err = Db.QueryRow(query, userInfo.Response[0].Email).Scan(&userID)
-		if err != nil {
-			http.Error(w, "Ошибка при регистрации пользователя через VK", http.StatusInternalServerError)
-			return
-		}
-		log.Printf("Пользователь успешно зарегистрирован через VK с ID: %d", userID)
-	} else if err != nil {
-		http.Error(w, "Ошибка при проверке пользователя", http.StatusInternalServerError)
-		return
-	}
-
-	http.Redirect(w, r, "/main?id="+strconv.Itoa(userID), http.StatusFound)
-}
+// Здесь могут быть ваши другие функции, такие как GetUserNameByIDFromDB и GetUserRoleByIDFromDB

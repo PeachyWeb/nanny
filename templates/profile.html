@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <h1>Профиль пользователя</h1>
+    <p>Логин: {{ .UserName }}</p>
+    <p>Имя: {{ .FirstName }}</p>
+    <p>Фамилия: {{ .LastName }}</p>
+    <p>Отчество: {{ .Patronymic }}</p>
+    <p>Город: {{ .City }}</p>
+    <p>Телефон: {{ .Phone }}</p>
+    <p>Возраст: {{ .Age }}</p>
+
+    <form action="/profile/update" method="post">
+        <label for="first_name">Имя:</label>
+        <input type="text" id="first_name" name="first_name" value="{{ .FirstName }}" required><br>
+        
+        <label for="last_name">Фамилия:</label>
+        <input type="text" id="last_name" name="last_name" value="{{ .LastName }}" required><br>
+        
+        <label for="patronymic">Отчество:</label>
+        <input type="text" id="patronymic" name="patronymic" value="{{ .Patronymic }}"><br>
+        
+        <label for="city">Город:</label>
+        <input type="text" id="city" name="city" value="{{ .City }}" required><br>
+        
+        <label for="phone">Телефон:</label>
+        <input type="text" id="phone" name="phone" value="{{ .Phone }}" required><br>
+        
+        <label for="age">Возраст:</label>
+        <input type="number" id="age" name="age" value="{{ .Age }}" required><br><br>
+
+        <button type="submit">Сохранить изменения</button>
+    </form>
+
+    <footer>
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
+    
+</body>
+</html>

@@ -31,10 +31,16 @@ type Appointment struct {
 }
 
 type User struct {
-	IDuser   int
-	Login    string
-	Password string
-	Role     string
+	IDuser     int
+	Login      string
+	Password   string
+	Role       string
+	FirstName  sql.NullString // Может быть NULL
+	LastName   sql.NullString // Может быть NULL
+	Patronymic sql.NullString // Может быть NULL
+	City       sql.NullString // Может быть NULL
+	Phone      sql.NullString // Может быть NULL
+	Age        sql.NullInt64  // Может быть NULL
 }
 
 type NannyDetailPage struct {

@@ -15,15 +15,19 @@ func main() {
 	http.HandleFunc("/main", handlers.Index)
 	http.HandleFunc("/nanny", handlers.NannyPage)
 	http.HandleFunc("/calendar", handlers.CalendarHandler)
+	http.HandleFunc("/profile", handlers.ProfilePage)
 
 	// Страницы для ролей
 	http.HandleFunc("/admin_page", handlers.AdminPage)
-	http.HandleFunc("/edit_nanny", handlers.EditNannyHandler)     // Обработчик для редактирования профиля
-	http.HandleFunc("/update_nanny", handlers.UpdateNannyHandler) // Обработчик для обновления профиля
+	http.HandleFunc("/edit_nanny", handlers.EditNannyHandler) // Обработчик для редактирования профиля
 
 	http.HandleFunc("/user_page", handlers.UserPage) // Добавляем маршрут для "User"
 	http.HandleFunc("/nanny/details", handlers.NannyHandler)
 	http.HandleFunc("/hire_nanny", handlers.HireNannyHandler)
+
+	http.HandleFunc("/profile/update", handlers.UpdateProfile)
+	http.HandleFunc("/update_user", handlers.UpdateUserHandler)
+	http.HandleFunc("/update_nanny", handlers.UpdateNannyHandler) // Обработчик для обновления профиля
 
 	// Маршруты
 	http.HandleFunc("/register", handlers.RegisterHandler) // Обработчик для регистрации
@@ -31,7 +35,6 @@ func main() {
 
 	// Дополнительные маршруты для функционала
 	http.HandleFunc("/admin/employees", handlers.AdminEmployeesPage)
-	http.HandleFunc("/update_user", handlers.UpdateUserHandler)
 
 	http.HandleFunc("/add_review", handlers.AddReviewHandler) // Обработчик для добавления отзыва
 

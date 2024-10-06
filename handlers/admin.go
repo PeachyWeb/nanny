@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func AdminPage(w http.ResponseWriter, r *http.Request) {
@@ -53,20 +55,12 @@ func AdminPage(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	// Определяем структуру данных для пользователей
-	users := []struct {
-		IDuser   int
-		UserName string
-		Role     string
-	}{}
+	var users []User
 
 	// Заполняем список пользователей
 	for rows.Next() {
-		var user struct {
-			IDuser   int
-			UserName string
-			Role     string
-		}
-		err := rows.Scan(&user.IDuser, &user.UserName, &user.Role)
+		var user User
+		err := rows.Scan(&user.IDuser, &user.Login, &user.Role)
 		if err != nil {
 			log.Println("Ошибка при сканировании данных пользователя:", err)
 			http.Error(w, "Ошибка при обработке данных пользователя", http.StatusInternalServerError)
@@ -87,11 +81,7 @@ func AdminPage(w http.ResponseWriter, r *http.Request) {
 		UserID   int
 		UserName string
 		Role     string
-		Users    []struct {
-			IDuser   int
-			UserName string
-			Role     string
-		}
+		Users    []User // Используем тип User
 	}{
 		UserID:   userID,
 		UserName: userName,
@@ -107,8 +97,6 @@ func AdminPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Обработчик для отображения списка сотрудников
-// Обработчик для отображения списка сотрудников
 func AdminEmployeesPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем сессию
 	session, err := store.Get(r, "session-name")
@@ -148,7 +136,9 @@ func AdminEmployeesPage(w http.ResponseWriter, r *http.Request) {
 		users, err = GetAllUsersSortedByLogin(Db)
 	case "role":
 		users, err = GetAllUsersSortedByRole(Db)
-	default: // По умолчанию сортировка по ID
+	case "id":
+		fallthrough
+	default:
 		users, err = GetAllUsersSortedByID(Db)
 	}
 
@@ -161,7 +151,7 @@ func AdminEmployeesPage(w http.ResponseWriter, r *http.Request) {
 	// Подготавливаем данные для шаблона
 	data := struct {
 		UserID   int
-		UserName string // Убедитесь, что это имя переменной корректно
+		UserName string
 		Role     string
 		Users    []User
 	}{
@@ -263,4 +253,65 @@ func GetAllUsersSortedByRole(db *sql.DB) ([]User, error) {
 	}
 
 	return users, nil
+}
+
+func getUserFromSession(r *http.Request) (int, string, string, error) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		return 0, "", "", err
+	}
+
+	// Проверяем, если в сессии нет данных о пользователе
+	userID, ok := session.Values["userID"].(int)
+	if !ok {
+		return 0, "", "", http.ErrNoCookie
+	}
+
+	userName, ok := session.Values["userName"].(string)
+	if !ok {
+		return 0, "", "", http.ErrNoCookie
+	}
+
+	role, ok := session.Values["role"].(string)
+	if !ok {
+		return 0, "", "", http.ErrNoCookie
+	}
+
+	return userID, userName, role, nil
+}
+
+// parseFilters получает параметры фильтрации из URL-запроса и возвращает их в виде числовых значений.
+func parseFilters(r *http.Request) (int, int, int, error) {
+	// Получаем параметры фильтрации из URL-запроса
+	minExperienceStr := r.URL.Query().Get("min_experience")
+	maxPriceStr := r.URL.Query().Get("max_price")
+	minRatingStr := r.URL.Query().Get("min_rating")
+
+	var err error
+	var minExperience, maxPrice, minRating int
+
+	// Преобразуем параметры в числовые значения, если они переданы
+	if minExperienceStr != "" {
+		minExperience, err = strconv.Atoi(minExperienceStr)
+		if err != nil {
+			return 0, 0, 0, errors.New("Неверный формат параметра min_experience")
+		}
+	}
+
+	if maxPriceStr != "" {
+		maxPrice, err = strconv.Atoi(maxPriceStr)
+		if err != nil {
+			return 0, 0, 0, errors.New("Неверный формат параметра max_price")
+		}
+	}
+
+	if minRatingStr != "" {
+		minRating, err = strconv.Atoi(minRatingStr)
+		if err != nil {
+			return 0, 0, 0, errors.New("Неверный формат параметра min_rating")
+		}
+	}
+
+	// Возвращаем значения параметров фильтрации
+	return minExperience, maxPrice, minRating, nil
 }

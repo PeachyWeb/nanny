@@ -1,72 +1,9 @@
 package handlers
 
 import (
-	"errors"
 	"log"
 	"net/http"
-	"strconv"
 )
-
-func getUserFromSession(r *http.Request) (int, string, string, error) {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		return 0, "", "", err
-	}
-
-	// Проверяем, если в сессии нет данных о пользователе
-	userID, ok := session.Values["userID"].(int)
-	if !ok {
-		return 0, "", "", http.ErrNoCookie
-	}
-
-	userName, ok := session.Values["userName"].(string)
-	if !ok {
-		return 0, "", "", http.ErrNoCookie
-	}
-
-	role, ok := session.Values["role"].(string)
-	if !ok {
-		return 0, "", "", http.ErrNoCookie
-	}
-
-	return userID, userName, role, nil
-}
-
-// parseFilters получает параметры фильтрации из URL-запроса и возвращает их в виде числовых значений.
-func parseFilters(r *http.Request) (int, int, int, error) {
-	// Получаем параметры фильтрации из URL-запроса
-	minExperienceStr := r.URL.Query().Get("min_experience")
-	maxPriceStr := r.URL.Query().Get("max_price")
-	minRatingStr := r.URL.Query().Get("min_rating")
-
-	var err error
-	var minExperience, maxPrice, minRating int
-
-	// Преобразуем параметры в числовые значения, если они переданы
-	if minExperienceStr != "" {
-		minExperience, err = strconv.Atoi(minExperienceStr)
-		if err != nil {
-			return 0, 0, 0, errors.New("Неверный формат параметра min_experience")
-		}
-	}
-
-	if maxPriceStr != "" {
-		maxPrice, err = strconv.Atoi(maxPriceStr)
-		if err != nil {
-			return 0, 0, 0, errors.New("Неверный формат параметра max_price")
-		}
-	}
-
-	if minRatingStr != "" {
-		minRating, err = strconv.Atoi(minRatingStr)
-		if err != nil {
-			return 0, 0, 0, errors.New("Неверный формат параметра min_rating")
-		}
-	}
-
-	// Возвращаем значения параметров фильтрации
-	return minExperience, maxPrice, minRating, nil
-}
 
 func CatalogPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем сессию

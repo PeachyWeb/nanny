@@ -40,7 +40,8 @@ type User struct {
 	Patronymic sql.NullString // Может быть NULL
 	City       sql.NullString // Может быть NULL
 	Phone      sql.NullString // Может быть NULL
-	Age        sql.NullInt64  // Может быть NULL
+	UserName   string
+	Age        sql.NullInt64 // Может быть NULL
 }
 
 type NannyDetailPage struct {

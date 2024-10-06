@@ -6,25 +6,24 @@
     <title>Страница администратора</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-        }
 
         .card-img-top {
             height: 250px;
             object-fit: cover;
         }
-
         .card {
             transition: transform 0.2s;
         }
 
         .card:hover {
             transform: scale(1.05);
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
         }
 
         .filter-section {
@@ -34,6 +33,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
+
         footer {
             position: fixed;
             bottom: 0;
@@ -42,6 +42,8 @@
             background-color: white;
             padding: 10px;
         }
+
+    </style>
 
     </style>
     <script>
@@ -92,26 +94,36 @@
     <h1>Добро пожаловать на админскую страницу!</h1>
     <p>Здесь могут находиться функции и инструменты для администраторов.</p>
 
-    <h2>Изменить данные пользователя</h2>
-    <form action="/update_user" method="POST">
-        <label for="user_id">ID пользователя:</label>
-        <input type="text" id="user_id" name="user_id" required><br>
+    <div class="filter-section mb-4">
+        <h2>Изменить данные пользователя</h2>
+        <form action="/update_user" method="POST">
+            <div class="mb-3">
+                <label for="user_id" class="form-label">ID пользователя:</label>
+                <input type="text" id="user_id" name="user_id" required class="form-control">
+            </div>
 
-        <label for="new_login">Новый логин:</label>
-        <input type="text" id="new_login" name="new_login"><br>
+            <div class="mb-3">
+                <label for="new_login" class="form-label">Новый логин:</label>
+                <input type="text" id="new_login" name="new_login" class="form-control">
+            </div>
 
-        <label for="new_password">Новый пароль:</label>
-        <input type="password" id="new_password" name="new_password"><br>
+            <div class="mb-3">
+                <label for="new_password" class="form-label">Новый пароль:</label>
+                <input type="password" id="new_password" name="new_password" class="form-control">
+            </div>
 
-        <label for="new_role">Новая роль:</label>
-        <select id="new_role" name="new_role">
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-            <option value="nanny">Nanny</option>
-        </select><br><br>
+            <div class="mb-3">
+                <label for="new_role" class="form-label">Новая роль:</label>
+                <select id="new_role" name="new_role" class="form-select">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="nanny">Nanny</option>
+                </select>
+            </div>
 
-        <button type="submit">Обновить данные</button>
-    </form>
+            <button type="submit" class="btn btn-primary">Обновить данные</button>
+        </form>
+    </div>
 
     <h2>Список всех сотрудников</h2>
 
@@ -127,7 +139,7 @@
     </form>
 
     <!-- Кнопка для переключения видимости списка сотрудников -->
-    <button id="toggleButton" onclick="toggleUsers()">Показать всех сотрудников</button>
+    <button id="toggleButton" class="btn btn-info" onclick="toggleUsers()">Показать всех сотрудников</button>
 
     <!-- Список сотрудников, изначально скрыт -->
     <div id="usersList" style="display: none;">
@@ -135,7 +147,7 @@
         <h3>Сотрудники:</h3>
         <ul>
             {{range .Users}}
-            <li>ID: {{.IDuser}}, Логин: {{.UserName}}, Роль: {{.Role}}</li>
+            <li>ID: {{.IDuser}}, Логин: {{.Login}}, Роль: {{.Role}}</li>
             {{end}}
         </ul>
         {{else}}

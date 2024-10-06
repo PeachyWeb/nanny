@@ -15,6 +15,11 @@ import (
 
 // Структура пользователя
 
+type Price struct {
+	Valid   bool
+	Float64 float64
+}
+
 type Review struct {
 	ReviewID  int
 	UserID    int
@@ -99,13 +104,18 @@ type Nanny struct {
 	Experience    int
 	Phone         string
 	Description   string
-	Price         float64
+	Price         Price
 	PhotoURL      string
 	AverageRating float64 // Новое поле
 	ReviewCount   int     // Новое поле
 	UserID        int
 	UserName      string
+	StartTime     time.Time
 	City          string
+	NannyName     string
+	NannyID       int
+	ReviewLeft    bool
+	Review        *Review
 }
 
 var Db *sql.DB
@@ -122,7 +132,6 @@ var TmplOrderHistory = template.Must(template.ParseFiles("templates/order_histor
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
-	// Получаем сессию
 	session, err := store.Get(r, "session-name")
 	if err != nil {
 		log.Println("Ошибка при получении сессии:", err)

@@ -18,6 +18,14 @@
             margin-bottom: 20px;
         }
 
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
         ul {
             list-style-type: none;
             padding: 0;
@@ -37,24 +45,10 @@
             transform: scale(1.02);
         }
 
-        a {
-            color: #007BFF;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        div.review-section {
+        .review-section {
             border-top: 1px solid #ddd;
             margin-top: 10px;
             padding-top: 10px;
-        }
-
-        h2 {
-            margin-top: 20px;
-            color: #333;
         }
 
         .btn {
@@ -68,28 +62,6 @@
 
         .btn:hover {
             background-color: #0056b3;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            margin-top: 5px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            resize: none;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        label {
-            display: block;
-            margin: 10px 0 5px;
         }
     </style>
 </head>
@@ -119,10 +91,40 @@
             </div>
         </div>
     </nav>
+
     <div class="container mt-5">
         <h1>История ваших заказов</h1>
+
+        <!-- Форма фильтров -->
+        <div class="filter-section">
+            <form action="/order-history" method="GET">
+                <div class="mb-3">
+                    <label for="nannyName" class="form-label">Имя няни:</label>
+                    <input type="text" id="nannyName" name="nannyName" class="form-control" placeholder="Введите имя няни">
+                </div>
+                <div class="mb-3">
+                    <label for="dateFrom" class="form-label">Дата с:</label>
+                    <input type="date" id="dateFrom" name="dateFrom" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="dateTo" class="form-label">Дата по:</label>
+                    <input type="date" id="dateTo" name="dateTo" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="reviewStatus" class="form-label">Статус отзыва:</label>
+                    <select id="reviewStatus" name="reviewStatus" class="form-select">
+                        <option value="">Все</option>
+                        <option value="reviewed">С отзывом</option>
+                        <option value="notReviewed">Без отзыва</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Применить фильтры</button>
+            </form>
+        </div>
+
+        <!-- Список заказов -->
         <ul>
-            {{ if .Orders }} 
+            {{ if .Orders }}
                 {{ range .Orders }}
                     <li>
                         Заказ от {{ .StartTime.Format "02.01.2006 15:04" }} 
@@ -136,25 +138,19 @@
                             </div>
                         {{ else }}
                             <div class="review-section">
-                                {{ if .Review }}
-                                    <p>Отзыв: {{ .Review.Comment }}</p>
-                                    <p>Рейтинг: {{ .Review.Rating }}/5</p>
-                                    <p>Оставлен: {{ .Review.CreatedAt.Format "02.01.2006 15:04" }}</p>
-                                {{ else }}
-                                    <h2>Оставить отзыв</h2>
-                                    <form action="/add_review" method="POST">
-                                        <input type="hidden" name="nanny_id" value="{{ .NannyID }}">
-                                        <div>
-                                            <label for="rating">Рейтинг (1-5):</label>
-                                            <input type="number" id="rating" name="rating" min="1" max="5" required>
-                                        </div>
-                                        <div>
-                                            <label for="comment">Комментарий:</label>
-                                            <textarea id="comment" name="comment" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn">Оставить отзыв</button>
-                                    </form>
-                                {{ end }}
+                                <h2>Оставить отзыв</h2>
+                                <form action="/add_review" method="POST">
+                                    <input type="hidden" name="nanny_id" value="{{ .NannyID }}">
+                                    <div>
+                                        <label for="rating">Рейтинг (1-5):</label>
+                                        <input type="number" id="rating" name="rating" min="1" max="5" required>
+                                    </div>
+                                    <div>
+                                        <label for="comment">Комментарий:</label>
+                                        <textarea id="comment" name="comment" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn">Оставить отзыв</button>
+                                </form>
                             </div>
                         {{ end }}
                     </li>
@@ -164,6 +160,7 @@
             {{ end }}
         </ul>
     </div>
+
     <footer>
         <div class="container">
             <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>

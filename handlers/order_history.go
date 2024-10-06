@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	// Не забудьте импортировать mux для работы с параметрами URL
 )
 
+// Основной обработчик для страницы истории заказов с фильтрацией и сортировкой
 func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	// Получаем сессию
 	session, err := store.Get(r, "session-name")
@@ -26,8 +26,15 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Получаем список всех заказов пользователя
-	rows, err := Db.Query(`
+	// Получение параметров из URL для фильтрации
+	nannyName := r.URL.Query().Get("nannyName")
+	dateFrom := r.URL.Query().Get("dateFrom")
+	dateTo := r.URL.Query().Get("dateTo")
+	reviewStatus := r.URL.Query().Get("reviewStatus")
+	sortBy := r.URL.Query().Get("sortBy") // Параметр для сортировки
+
+	// Построение SQL-запроса с фильтрами
+	query := `
         SELECT 
             a.idappointment, a.starttime, a.price, n.id, n.name,
             EXISTS(SELECT 1 FROM reviews WHERE nanny_id = n.id AND user_id = $1) AS review_left,
@@ -35,16 +42,54 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
         FROM appointments a
         JOIN nannies n ON a.nannyid = n.id
         LEFT JOIN reviews r ON r.nanny_id = n.id AND r.user_id = $1
-        WHERE a.userid = $1`, userID)
+        WHERE a.userid = $1
+    `
+	var args []interface{}
+	args = append(args, userID)
 
+	// Добавление условий в зависимости от параметров фильтрации
+	if nannyName != "" {
+		query += " AND n.name ILIKE $2"
+		args = append(args, "%"+nannyName+"%")
+	}
+	if dateFrom != "" {
+		query += " AND a.starttime >= $3"
+		args = append(args, dateFrom)
+	}
+	if dateTo != "" {
+		query += " AND a.starttime <= $4"
+		args = append(args, dateTo)
+	}
+	if reviewStatus == "withReview" {
+		query += " AND r.order_id IS NOT NULL"
+	} else if reviewStatus == "withoutReview" {
+		query += " AND r.order_id IS NULL"
+	}
+
+	// Добавляем сортировку по запросу пользователя
+	switch sortBy {
+	case "dateAsc":
+		query += " ORDER BY a.starttime ASC"
+	case "dateDesc":
+		query += " ORDER BY a.starttime DESC"
+	case "priceAsc":
+		query += " ORDER BY a.price ASC"
+	case "priceDesc":
+		query += " ORDER BY a.price DESC"
+	default:
+		query += " ORDER BY a.starttime DESC" // Сортировка по умолчанию
+	}
+
+	// Выполнение SQL-запроса
+	rows, err := Db.Query(query, args...)
 	if err != nil {
-		log.Println("Ошибка при получении заказов:", err)
-		http.Error(w, "Ошибка при получении заказов", http.StatusInternalServerError)
+		log.Println("Ошибка при выполнении запроса к базе данных:", err)
+		http.Error(w, "Ошибка при выполнении запроса к базе данных", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	// Формируем список заказов
+	// Обработка результатов запроса
 	var orders []Order
 	for rows.Next() {
 		var order Order
@@ -77,7 +122,17 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		orders = append(orders, order)
 	}
 
-	pageData := OrderHistoryPage{
+	if err = rows.Err(); err != nil {
+		log.Println("Ошибка при обработке данных:", err)
+		http.Error(w, "Ошибка при обработке данных", http.StatusInternalServerError)
+		return
+	}
+
+	// Формируем данные для шаблона
+	pageData := struct {
+		UserID int
+		Orders []Order
+	}{
 		UserID: userID,
 		Orders: orders,
 	}

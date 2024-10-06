@@ -15,10 +15,10 @@ import (
 
 // Структура пользователя
 
-type Price struct {
+/*type Price struct {
 	Valid   bool
 	Float64 float64
-}
+}*/
 
 type Review struct {
 	ReviewID  int
@@ -104,7 +104,7 @@ type Nanny struct {
 	Experience    int
 	Phone         string
 	Description   string
-	Price         Price
+	Price         float64
 	PhotoURL      string
 	AverageRating float64 // Новое поле
 	ReviewCount   int     // Новое поле

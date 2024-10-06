@@ -16,6 +16,9 @@ func main() {
 	http.HandleFunc("/nanny", handlers.NannyPage)
 	http.HandleFunc("/calendar", handlers.CalendarHandler)
 	http.HandleFunc("/profile", handlers.ProfilePage)
+	http.HandleFunc("/order-history", handlers.OrderHistoryHandler)
+
+	http.HandleFunc("/order/{order_id}/review", handlers.AddReviewForOrderHandler)
 
 	// Страницы для ролей
 	http.HandleFunc("/admin_page", handlers.AdminPage)

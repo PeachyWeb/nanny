@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История заказов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        li:hover {
+            transform: scale(1.02);
+        }
+
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        div.review-section {
+            border-top: 1px solid #ddd;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .btn {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 5px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>История ваших заказов</h1>
+    <ul>
+        {{ if .Orders }} <!-- Проверка на наличие заказов -->
+            {{ range .Orders }}
+                <li>
+                    Заказ от {{ .StartTime.Format "02.01.2006 15:04" }} 
+                    (Сумма: {{ if .Price.Valid }}{{ printf "%.2f" .Price.Float64 }}{{ else }}Цена не указана{{ end }})
+                    Няня: {{ .NannyName }}
+                    {{ if .ReviewLeft }}
+                        <div class="review-section">
+                            <p>Отзыв: {{ .Review.Comment }}</p>
+                            <p>Рейтинг: {{ .Review.Rating }}/5</p>
+                            <p>Оставлен: {{ .Review.CreatedAt.Format "02.01.2006 15:04" }}</p>
+                        </div>
+                    {{ else }}
+                        <div class="review-section">
+                            <div class="review-section">
+                                {{ if .Review }}
+                                    <p>Отзыв: {{ .Review.Comment }}</p>
+                                    <p>Рейтинг: {{ .Review.Rating }}/5</p>
+                                    <p>Оставлен: {{ .Review.CreatedAt.Format "02.01.2006 15:04" }}</p>
+                                {{ else }}
+                                    <h2>Оставить отзыв</h2>
+                                    <form action="/add_review" method="POST">
+                                        <input type="hidden" name="nanny_id" value="{{ .NannyID }}">
+                                        <div>
+                                            <label for="rating">Рейтинг (1-5):</label>
+                                            <input type="number" id="rating" name="rating" min="1" max="5" required>
+                                        </div>
+                                        <div>
+                                            <label for="comment">Комментарий:</label>
+                                            <textarea id="comment" name="comment" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn">Оставить отзыв</button>
+                                    </form>
+                                {{ end }}
+                            </div>
+                    {{ end }}
+                </li>
+            {{ end }}
+        {{ else }}
+            <li>У вас нет заказов.</li>
+        {{ end }}
+    </ul>
+</body>
+</html>

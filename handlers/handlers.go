@@ -53,6 +53,38 @@ type NannyDetailPage struct {
 	AverageRating float64 // Убедитесь, что это поле присутствует
 }
 
+type OrderHistoryPage struct {
+	UserID int
+	Orders []Order
+}
+
+/*
+	type Order struct {
+		ID         int
+		StartTime  time.Time
+		EndTime    time.Time
+		UserID     int
+		NannyID    int
+		NannyName  string
+		Price      float64
+		ReviewLeft bool
+		Date       time.Time
+		Total      float64 // Или другой тип для цены
+		Review     *Review // Если используется для хранения отзыва
+	}
+*/
+
+type Order struct {
+	ID         int
+	StartTime  time.Time
+	EndTime    time.Time
+	Price      sql.NullFloat64 // Используйте sql.NullFloat64 для обработки NULL значений
+	NannyID    int
+	NannyName  string
+	Review     *Review // Измените на указатель, чтобы избежать ошибки, если отзыва нет
+	ReviewLeft bool
+}
+
 type PageData struct {
 	UserID        int
 	UserName      string
@@ -86,6 +118,7 @@ var TmplHome = template.Must(template.ParseFiles("templates/home.html"))
 var TmplCalendar = template.Must(template.ParseFiles("templates/calendar.html"))
 var TmplProfile = template.Must(template.ParseFiles("templates/profile.html"))
 var TmplNannyGuide = template.Must(template.ParseFiles("templates/nanny_guid.html"))
+var TmplOrderHistory = template.Must(template.ParseFiles("templates/order_history.html"))
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -282,7 +315,7 @@ func UpdateNannyRating(nannyID int) error {
 }
 
 func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
-	//Получаем сессию
+	// Получаем сессию
 	session, err := store.Get(r, "session-name")
 	if err != nil {
 		log.Println("Ошибка при получении сессии:", err)
@@ -296,8 +329,8 @@ func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
 		return
 	}
-	if r.Method == http.MethodPost {
 
+	if r.Method == http.MethodPost {
 		nannyID := r.FormValue("nanny_id")
 		startTime := r.FormValue("start_time")
 		endTime := r.FormValue("end_time")
@@ -321,19 +354,34 @@ func HireNannyHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Вставка данных в таблицу appointments
-		query := `INSERT INTO appointments (userid, nannyid, starttime, endtime) VALUES ($1, $2, $3, $4)`
-		_, err = Db.Exec(query, userID, nannyID, start, end)
+		// Вычисляем длительность в часах
+		duration := end.Sub(start).Hours()
+
+		// Получаем почасовую ставку няни из базы данных
+		var hourlyRate float64
+		err = Db.QueryRow("SELECT price FROM nannies WHERE id = $1", nannyID).Scan(&hourlyRate)
 		if err != nil {
-			log.Println("Error inserting appointment into database:", err)
-			http.Error(w, "Failed to hire nanny. Please try again later.", http.StatusInternalServerError)
+			log.Println("Ошибка при получении почасовой ставки няни:", err)
+			http.Error(w, "Не удалось получить почасовую ставку няни. Повторите попытку позже.", http.StatusInternalServerError)
+			return
+		}
+
+		// Вычисляем цену услуги
+		price := duration * hourlyRate
+
+		// Вставка данных в таблицу appointments, включая рассчитанную цену
+		query := `INSERT INTO appointments (userid, nannyid, starttime, endtime, price) VALUES ($1, $2, $3, $4, $5)`
+		_, err = Db.Exec(query, userID, nannyID, start, end, price)
+		if err != nil {
+			log.Println("Ошибка при добавлении записи о встрече в базу данных:", err)
+			http.Error(w, "Не удалось нанять няню. Повторите попытку позже.", http.StatusInternalServerError)
 			return
 		}
 
 		// Перенаправление пользователя на страницу календаря после успешного добавления записи
 		http.Redirect(w, r, "/calendar", http.StatusSeeOther)
 	} else {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		http.Error(w, "Недопустимый метод запроса", http.StatusMethodNotAllowed)
 	}
 }
 

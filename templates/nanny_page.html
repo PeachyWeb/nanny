@@ -69,13 +69,18 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/calendar">Календарь</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <h1>{{ .Nanny.Name }}</h1> <!-- Изменено на отображение только ID -->
-    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}" class="img-fluid mb-4"> <!-- Фотография няни -->
+    <h1>{{ .Nanny.Name }}</h1>
+    <p>Город: {{ .Nanny.City }}</p>
+    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}" class="img-fluid mb-4">
+
     
     <h2 class="mt-4">Оформить найм няни</h2>
     <form action="/hire_nanny" method="POST" class="mb-4">

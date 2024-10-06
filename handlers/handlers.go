@@ -16,12 +16,12 @@ import (
 // Структура пользователя
 
 type Review struct {
-	ID        int
-	NannyID   int
+	ReviewID  int
 	UserID    int
+	NannyID   int
 	Rating    int
 	Comment   string
-	CreatedAt time.Time // Добавлено поле
+	CreatedAt time.Time
 }
 
 type Appointment struct {
@@ -72,6 +72,7 @@ type Nanny struct {
 	ReviewCount   int     // Новое поле
 	UserID        int
 	UserName      string
+	City          string
 }
 
 var Db *sql.DB
@@ -192,235 +193,6 @@ func ParseTemplate(filename string) *template.Template {
 	return tmpl
 }
 
-func NannyHandler(w http.ResponseWriter, r *http.Request) {
-	// Получаем сессию
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		log.Println("Ошибка при получении сессии:", err)
-		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
-		return
-	}
-
-	// Проверяем идентификатор пользователя в сессии
-	userID, ok := session.Values["userID"].(int)
-	if !ok || userID <= 0 {
-		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
-		return
-	}
-
-	// Получаем идентификатор няни из URL
-	idNanny := r.URL.Query().Get("nanny_id")
-	if idNanny == "" {
-		http.Error(w, "Missing nanny ID", http.StatusBadRequest)
-		return
-	}
-
-	// Получаем информацию о няне из базы данных
-	query := "SELECT id, name, experience, phone, average_rating, description, price, photo_url FROM nannies WHERE id = $1"
-	row := Db.QueryRow(query, idNanny)
-
-	var nanny struct {
-		ID            int
-		Name          string
-		Experience    string
-		Phone         string
-		AverageRating float64
-		Description   string
-		Price         float64
-		PhotoURL      string
-	}
-
-	err = row.Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.AverageRating, &nanny.Description, &nanny.Price, &nanny.PhotoURL)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Nanny not found", http.StatusNotFound)
-			return
-		} else {
-			log.Println("Error querying nanny:", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Error getting user name", http.StatusInternalServerError)
-		return
-	}
-
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		http.Error(w, "Error getting user role", http.StatusInternalServerError)
-		return
-	}
-
-	// Получаем отзывы о няне
-	reviewQuery := "SELECT user_id, rating, comment, created_at FROM reviews WHERE nanny_id = $1"
-	rows, err := Db.Query(reviewQuery, nanny.ID)
-	if err != nil {
-		log.Println("Error querying reviews:", err)
-		http.Error(w, "Server error", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var reviews []struct {
-		UserID    int
-		Rating    float64
-		Comment   string
-		CreatedAt string
-	}
-
-	for rows.Next() {
-		var review struct {
-			UserID    int
-			Rating    float64
-			Comment   string
-			CreatedAt string
-		}
-		if err := rows.Scan(&review.UserID, &review.Rating, &review.Comment, &review.CreatedAt); err != nil {
-			log.Println("Error scanning review:", err)
-			http.Error(w, "Server error", http.StatusInternalServerError)
-			return
-		}
-		reviews = append(reviews, review)
-	}
-
-	// Создаем структуру для передачи в шаблон
-	pageData := struct {
-		UserID   int
-		UserName string
-		Role     string
-		Nanny    struct {
-			ID            int
-			Name          string
-			Experience    string
-			Phone         string
-			AverageRating float64
-			Description   string
-			Price         float64
-			PhotoURL      string
-		}
-		Reviews []struct {
-			UserID    int
-			Rating    float64
-			Comment   string
-			CreatedAt string
-		}
-	}{
-		UserID:   userID,
-		UserName: userName,
-		Role:     role,
-		Nanny:    nanny,
-		Reviews:  reviews,
-	}
-
-	// Рендерим шаблон с данными
-	tmpl, err := template.ParseFiles("templates/nanny_page.html")
-	if err != nil {
-		log.Println("Error loading template:", err)
-		http.Error(w, "Error loading template", http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, pageData)
-	if err != nil {
-		log.Printf("Error rendering template: %v, PageData: %+v", err, pageData)
-		http.Error(w, "Error rendering template", http.StatusInternalServerError)
-	}
-}
-
-// Handler для обновления профиля няни
-func UpdateNannyHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		// Получение данных из формы
-		nannyID := r.FormValue("id")
-		name := r.FormValue("name")
-		description := r.FormValue("description")
-		priceStr := r.FormValue("price")
-		photoURL := r.FormValue("photo_url")
-
-		// Преобразование цены из строки в float64
-		price, err := strconv.ParseFloat(priceStr, 64)
-		if err != nil {
-			http.Error(w, "Invalid price", http.StatusBadRequest)
-			return
-		}
-
-		// Обновление данных о няне в базе данных
-		query := "UPDATE nannies SET name = $1, description = $2, price = $3, photo_url = $4 WHERE id = $5"
-		_, err = Db.Exec(query, name, description, price, photoURL, nannyID)
-		if err != nil {
-			http.Error(w, "Error updating nanny profile", http.StatusInternalServerError)
-			return
-		}
-
-		// Перенаправление обратно на страницу с каталогом или панелью
-		http.Redirect(w, r, "/edit_nanny", http.StatusFound)
-	} else {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-	}
-}
-
-func EditNannyHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		log.Println("Ошибка при получении сессии:", err)
-		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
-		return
-	}
-
-	// Проверяем идентификатор пользователя в сессии
-	userID, ok := session.Values["userID"].(int)
-	if !ok || userID <= 0 {
-		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
-		return
-	}
-
-	// Выводим userID для отладки
-	log.Print("UserID:", userID)
-
-	// Предполагается, что ID няни передается через URL или форму,
-	// например, вы можете получить его через параметр URL, например /edit_nanny?id=1
-
-	// Получение данных о няне из базы данных
-	nanny, err := GetNannyByID(userID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Няня не найдена", http.StatusNotFound)
-			return
-		}
-		log.Println("Ошибка получения данных о няне:", err)
-		http.Error(w, "Ошибка получения данных о няне", http.StatusInternalServerError)
-		return
-	}
-
-	// Отправка данных в шаблон редактирования
-	data := struct {
-		UserID int
-		Nanny  Nanny
-	}{
-		UserID: userID,
-		Nanny:  nanny,
-	}
-
-	// Замените "templates/edit_nanny.html" на ваш путь к шаблону
-	err = TmplEditNanny.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func GetNannyByID(nannyID int) (Nanny, error) {
-	var nanny Nanny
-	err := Db.QueryRow("SELECT id, name, experience, phone, description, price, photo_url, average_rating, review_count FROM nannies WHERE id = $1", nannyID).
-		Scan(&nanny.ID, &nanny.Name, &nanny.Experience, &nanny.Phone, &nanny.Description, &nanny.Price, &nanny.PhotoURL, &nanny.AverageRating, &nanny.ReviewCount)
-	if err != nil {
-		return nanny, err // Возвращаем пустую структуру и ошибку
-	}
-	return nanny, nil // Возвращаем заполненную структуру и nil
-}
-
 func AddReviewHandler(w http.ResponseWriter, r *http.Request) {
 	// Получаем сессию
 	session, err := store.Get(r, "session-name")
@@ -506,19 +278,6 @@ func UpdateNannyRating(nannyID int) error {
 	_, err = Db.Exec("UPDATE nannies SET average_rating = $1, review_count = $2 WHERE id = $3",
 		averageRating, reviewCount, nannyID)
 	return err
-}
-
-// Функция для расчета среднего рейтинга
-func CalculateAverageRating(ratings []float64) float64 {
-	if len(ratings) == 0 {
-		return 0 // Если рейтингов нет, возвращаем 0
-	}
-
-	var total float64
-	for _, rating := range ratings {
-		total += rating
-	}
-	return total / float64(len(ratings))
 }
 
 func HireNannyHandler(w http.ResponseWriter, r *http.Request) {

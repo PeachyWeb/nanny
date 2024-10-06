@@ -1,112 +1,141 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Гайд по регистрации няней</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
 </head>
+
 <body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-<div class="container mt-5">
-    <h1>Гайд по регистрации няней</h1>
-    <p>Для того чтобы стать няней, вам необходимо предоставить следующие документы:</p>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Документ</th>
-                <th>Описание</th>
-                <th>Способы связи</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Паспорт</td>
-                <td>Копия паспорта для удостоверения личности.</td>
-                <td>
-                    <ul>
-                        <li>WhatsApp: +7 999 999 99 99</li>
-                        <li>Telegram: @admin_username</li>
-                        <li>Email: admin@example.com</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>Справка о здоровье</td>
-                <td>Справка, подтверждающая отсутствие медицинских противопоказаний.</td>
-                <td>
-                    <ul>
-                        <li>WhatsApp: +7 999 999 99 99</li>
-                        <li>Telegram: @admin_username</li>
-                        <li>Email: admin@example.com</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>Рекомендации</td>
-                <td>Письменные рекомендации от предыдущих работодателей.</td>
-                <td>
-                    <ul>
-                        <li>WhatsApp: +7 999 999 99 99</li>
-                        <li>Telegram: @admin_username</li>
-                        <li>Email: admin@example.com</li>
-                    </ul>
-                </td>
-            </tr>
-            <tr>
-                <td>Опыт работы</td>
-                <td>Подтверждение релевантного опыта работы с детьми.</td>
-                <td>
-                    <ul>
-                        <li>WhatsApp: +7 999 999 99 99</li>
-                        <li>Telegram: @admin_username</li>
-                        <li>Email: admin@example.com</li>
-                    </ul>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container mt-5">
+        <h1>Гайд по регистрации няней</h1>
+        <p>Для того чтобы стать няней, вам необходимо предоставить следующие документы:</p>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Документ</th>
+                    <th>Описание</th>
+                    <th>Способы связи</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Паспорт</td>
+                    <td>Копия паспорта для удостоверения личности.</td>
+                    <td>
+                        <ul>
+                            <li>WhatsApp: +7 999 999 99 99</li>
+                            <li>Telegram: @admin_username</li>
+                            <li>Email: admin@example.com</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Справка о здоровье</td>
+                    <td>Справка, подтверждающая отсутствие медицинских противопоказаний.</td>
+                    <td>
+                        <ul>
+                            <li>WhatsApp: +7 999 999 99 99</li>
+                            <li>Telegram: @admin_username</li>
+                            <li>Email: admin@example.com</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Рекомендации</td>
+                    <td>Письменные рекомендации от предыдущих работодателей.</td>
+                    <td>
+                        <ul>
+                            <li>WhatsApp: +7 999 999 99 99</li>
+                            <li>Telegram: @admin_username</li>
+                            <li>Email: admin@example.com</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Опыт работы</td>
+                    <td>Подтверждение релевантного опыта работы с детьми.</td>
+                    <td>
+                        <ul>
+                            <li>WhatsApp: +7 999 999 99 99</li>
+                            <li>Telegram: @admin_username</li>
+                            <li>Email: admin@example.com</li>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-    <h2>Форма для регистрации как няню</h2>
-    <form action="/register_nanny" method="POST">
-        <div class="mb-3">
-            <label for="first_name" class="form-label">Имя:</label>
-            <input type="text" class="form-control" id="first_name" name="first_name" required>
-        </div>
-        <div class="mb-3">
-            <label for="last_name" class="form-label">Фамилия:</label>
-            <input type="text" class="form-control" id="last_name" name="last_name" required>
-        </div>
-        <div class="mb-3">
-            <label for="patronymic" class="form-label">Отчество:</label>
-            <input type="text" class="form-control" id="patronymic" name="patronymic">
-        </div>
-        <div class="mb-3">
-            <label for="city" class="form-label">Город:</label>
-            <input type="text" class="form-control" id="city" name="city" required>
-        </div>
-        <div class="mb-3">
-            <label for="phone" class="form-label">Телефон:</label>
-            <input type="text" class="form-control" id="phone" name="phone" required>
-        </div>
-        <div class="mb-3">
-            <label for="age" class="form-label">Возраст:</label>
-            <input type="number" class="form-control" id="age" name="age" required>
-        </div>
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="health_certificate" name="health_certificate">
-            <label class="form-check-label" for="health_certificate">Справка о здоровье</label>
-        </div>
-        <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="relevant_experience" name="relevant_experience">
-            <label class="form-check-label" for="relevant_experience">Релевантный опыт</label>
-        </div>
-        <button type="submit" class="btn btn-primary">Зарегистрироваться как няня</button>
-    </form>
+        <h2>Форма для регистрации как няню</h2>
+        <form action="/register_nanny" method="POST">
+            <div class="mb-3">
+                <label for="first_name" class="form-label">Имя:</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="last_name" class="form-label">Фамилия:</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="patronymic" class="form-label">Отчество:</label>
+                <input type="text" class="form-control" id="patronymic" name="patronymic">
+            </div>
+            <div class="mb-3">
+                <label for="city" class="form-label">Город:</label>
+                <input type="text" class="form-control" id="city" name="city" required>
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Телефон:</label>
+                <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+            <div class="mb-3">
+                <label for="age" class="form-label">Возраст:</label>
+                <input type="number" class="form-control" id="age" name="age" required>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="health_certificate" name="health_certificate">
+                <label class="form-check-label" for="health_certificate">Справка о здоровье</label>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="relevant_experience" name="relevant_experience">
+                <label class="form-check-label" for="relevant_experience">Релевантный опыт</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Зарегистрироваться как няня</button>
+        </form>
 
 
-    <a href="/main" class="btn btn-secondary mt-3">Назад к профилю</a>
-</div>
+        <a href="/main" class="btn btn-secondary mt-3">Назад к профилю</a>
+    </div>
 
 </body>
+
 </html>

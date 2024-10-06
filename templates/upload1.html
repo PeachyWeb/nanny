@@ -35,6 +35,7 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
+
         footer {
             position: fixed;
             bottom: 0;
@@ -43,7 +44,6 @@
             background-color: white;
             padding: 10px;
         }
-
     </style>
 </head>
 
@@ -68,21 +68,30 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/calendar">Календарь</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-    
-    
-
-
 
     <!-- Основной контент -->
     <div class="container py-5">
-    
-
         <!-- Фильтры -->
         <div class="row filter-section">
+            <div class="col-md-3">
+                <label for="filterCity" class="form-label">Город</label>
+                <select id="filterCity" class="form-select">
+                    <option value="">Все города</option>
+                    <option value="Москва">Москва</option>
+                    <option value="Санкт-Петербург">Санкт-Петербург</option>
+                    <option value="Казань">Казань</option>
+                    <option value="Екатеринбург">Екатеринбург</option>
+                    <option value="Нижний Новгород">Нижний Новгород</option>
+                    <!-- Добавьте другие города по необходимости -->
+                </select>
+            </div>
             <div class="col-md-3">
                 <label for="filterExperience" class="form-label">Стаж (лет)</label>
                 <input type="number" id="filterExperience" class="form-control" placeholder="Мин. стаж">
@@ -103,7 +112,7 @@
         <!-- Карточки нянь -->
         <div class="row g-4" id="nannyCatalog">
             {{ range .Nannies }}
-            <div class="col-12 col-md-6 col-lg-4 nanny-card" data-experience="{{ .Experience }}"
+            <div class="col-12 col-md-6 col-lg-4 nanny-card" data-city="{{ .City }}" data-experience="{{ .Experience }}"
                 data-price="{{ .Price }}" data-rating="{{ .AverageRating }}">
                 <div class="card h-100 shadow-sm">
                     <a href="/nanny/details?nanny_id={{.ID}}" class="stretched-link text-decoration-none text-dark">
@@ -114,8 +123,7 @@
                             <p class="text-muted">{{ .Price }} руб./час</p>
                             <p>Стаж: {{ .Experience }}</p>
                             <p>Рейтинг: {{ .AverageRating }}</p>
-                            <!-- Кнопка добавления няни в корзину -->
-                        
+                            <p>Город: {{ .City }}</p> <!-- Добавлено поле города -->
                         </div>
                     </a>
                 </div>
@@ -123,9 +131,9 @@
             {{ end }}
         </div>
     </div>
-     <!-- Подвал -->
-   
-     <footer >
+
+    <!-- Подвал -->
+    <footer>
         <div class="container">
             <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
         </div>
@@ -138,6 +146,7 @@
             const nannyCatalog = document.getElementById('nannyCatalog');
 
             applyFiltersButton.addEventListener('click', function () {
+                const cityValue = document.getElementById('filterCity').value;
                 const experienceValue = parseInt(document.getElementById('filterExperience').value) || 0;
                 const priceValue = parseFloat(document.getElementById('filterPrice').value) || Infinity;
                 const ratingValue = parseFloat(document.getElementById('filterRating').value) || 0;
@@ -148,8 +157,11 @@
                     const experience = parseInt(card.dataset.experience);
                     const price = parseFloat(card.dataset.price);
                     const rating = parseFloat(card.dataset.rating);
+                    const city = card.dataset.city;
 
-                    if (experience >= experienceValue && price <= priceValue && rating >= ratingValue) {
+                    const cityMatches = cityValue === "" || city === cityValue;
+
+                    if (cityMatches && experience >= experienceValue && price <= priceValue && rating >= ratingValue) {
                         card.style.display = 'block';
                     } else {
                         card.style.display = 'none';

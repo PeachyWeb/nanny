@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 	"net/http"
@@ -129,78 +128,6 @@ func CatalogPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Ошибка выполнения шаблона:", err)
 		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
-	}
-}
-
-func NannyPage(w http.ResponseWriter, r *http.Request) {
-	// Получаем информацию о текущем пользователе из сессии
-	userID, userName, role, err := getUserFromSession(r)
-	if err != nil {
-		http.Error(w, "Не удалось получить данные пользователя из сессии", http.StatusUnauthorized)
-		return
-	}
-
-	// Проверяем, передан ли ID няни
-	nannyIDStr := r.URL.Query().Get("nanny_id")
-	if nannyIDStr == "" {
-		http.Error(w, "ID няни не передан", http.StatusBadRequest)
-		return
-	}
-
-	nannyID, err := strconv.Atoi(nannyIDStr)
-	if err != nil {
-		http.Error(w, "Неверный идентификатор няни", http.StatusBadRequest)
-		return
-	}
-
-	// Получаем информацию о конкретной няне из базы данных
-	var nanny Nanny
-	err = Db.QueryRow("SELECT id, name, description, price, photo_url FROM nannies WHERE id = $1", nannyID).Scan(&nanny.ID, &nanny.Name, &nanny.Description, &nanny.Price, &nanny.PhotoURL)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Няня не найдена", http.StatusNotFound)
-		} else {
-			http.Error(w, "Ошибка при получении информации о няне", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	// Получаем отзывы о няне и вычисляем средний рейтинг
-	reviews, err := GetReviewsByNannyID(nannyID)
-	if err != nil {
-		http.Error(w, "Ошибка при получении отзывов из базы данных", http.StatusInternalServerError)
-		return
-	}
-
-	// Вычисление среднего рейтинга
-	var totalRating float64
-	for _, review := range reviews {
-		totalRating += float64(review.Rating)
-	}
-	averageRating := 0.0
-	if len(reviews) > 0 {
-		averageRating = totalRating / float64(len(reviews))
-	}
-
-	// Обновляем средний рейтинг в базе данных
-	err = UpdateNannyRating(nannyID)
-	if err != nil {
-		log.Println("Ошибка при обновлении рейтинга няни:", err)
-	}
-
-	// Подготовка данных для передачи в шаблон
-	data := NannyDetailPage{
-		UserID:        userID,
-		UserName:      userName,
-		Role:          role,
-		Nanny:         nanny,
-		AverageRating: averageRating,
-		Reviews:       reviews,
-	}
-
-	// Рендерим шаблон
-	if err := TmplNanny.Execute(w, data); err != nil {
-		http.Error(w, "Ошибка выполнения шаблона: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 

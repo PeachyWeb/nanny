@@ -92,7 +92,7 @@ func init() {
 // Функция для открытия базы данных
 func OpenDatabase() {
 	var err error
-	Db, err = sql.Open("postgres", "user=postgres password=1234 dbname=airat sslmode=disable")
+	Db, err = sql.Open("postgres", "user=postgres password=Tiqjt7o1992 dbname=airat sslmode=disable")
 	if err != nil {
 		log.Fatal("Не удалось подключиться к базе данных:", err)
 	}

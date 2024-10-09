@@ -9,48 +9,82 @@
     <style>
         body {
             background-color: #f8f9fa;
+            overflow: hidden; /* Отключение прокрутки страницы */
+        }
+
+        .navbar {
+            background-color: turquoise; /* Черный фон для навигационной панели */
         }
 
         .navbar-brand {
             font-weight: bold;
+            color: rgb(0, 0, 109); /* Белый цвет для названия */
         }
 
-        .card-img-top {
-            height: 250px;
-            object-fit: cover;
+        .navbar-nav .nav-link {
+            color: rgb(0,0,109); /* Белый цвет для ссылок */
         }
 
-        .card {
-            transition: transform 0.2s;
+        .navbar-nav .nav-link:hover {
+            color: #007bff; /* Цвет при наведении */
         }
 
-        .card:hover {
-            transform: scale(1.05);
+        .progress-bar {
+            position: absolute;
+            height: 5px; /* Высота полоски */
+            background-color: #007bff; /* Цвет полоски */
+            box-shadow: 0 4px 10px rgba(0, 140, 255, 0.5); /* Тень */
+            animation: slide 5s forwards; /* Анимация с длительностью и остановкой */
+            border: 2px solid silver; /* Серебристый ободок */
+            top: 60px; /* Отступ сверху */
+            width: 100%; /* Полная ширина полоски */
         }
 
-        .filter-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+        @keyframes slide {
+            0% {
+                width: 0%;
+                left: 0%;
+                transition-timing-function: ease-in; /* Медленно в начале */
+            }
+            50% {
+                width: 100%;
+                left: 0%;
+                transition-timing-function: linear; /* Быстро в середине */
+            }
+            100% {
+                width: 100%;
+                left: 0%;
+                transition-timing-function: ease-out; /* Медленно в конце */
+            }
         }
-        footer {
-            position: fixed;
-            bottom: 0;
+
+        .welcome-text {
+            position: absolute; /* Абсолютное позиционирование для наложения на изображение */
+            top: calc(60px + 40%); /* Положение текста по вертикали (под полоской) */
+            left: 50%; /* Центрирование по горизонтали */
+            transform: translate(-50%, -50%); /* Центрирование текста относительно его размера */
+            font-size: 70px; /* Размер шрифта */
+            color: rgb(111, 111, 255); /* Цвет текста (белый) для контраста с фоном */
+            text-align: center; /* Центрирование текста */
+            text-shadow: 1px 1px 5px rgb(27, 27, 27); /* Небольшая тень */
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .full-screen-image {
+            position: relative;
             width: 100%;
-            text-align: center;
-            background-color: white;
-            padding: 10px;
+            height: calc(100vh - 60px); /* Высота экрана минус высота полоски */
+            background-image: url('https://i.pinimg.com/originals/9c/fd/08/9cfd08ce6af3193b61cd847d928c2c22.jpg');
+            background-size: cover; /* Заполнение изображения по размеру контейнера */
+            background-position: center; /* Центрирование изображения */
         }
-
     </style>
 </head>
 
 <body>
 
     <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -63,7 +97,7 @@
                         <a class="nav-link" href="/main">Главная</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                        <a class="nav-link" href="/catalog">Каталог</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/calendar">Календарь</a>
@@ -75,16 +109,25 @@
             </div>
         </div>
     </nav>
-    <div class="container mt-5">
-        <h1>Welcome, {{.UserName}}!</h1>
-        <h2>Your role: {{.Role}}</h2>
 
+    <!-- Полоска под заголовком -->
+    <div class="progress-bar"></div>
+
+    <!-- Полноэкранное изображение -->
+    <div class="full-screen-image"></div>
+
+    <!-- Текст приветствия -->
+    <div class="welcome-text">
+        Добро пожаловать на сайт по найму нянь!
+    </div>
+
+    <div class="container mt-5">
         {{ if eq .Role "admin" }}
         <h2>Панель администратора</h2>
         <form action="/admin_page" method="GET">
             <button type="submit" class="btn btn-secondary">Перейти на админскую страницу</button>
         </form>
-       
+
         {{ else if eq .Role "nanny" }}
         <h2>Панель няни</h2>
         <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
@@ -93,11 +136,6 @@
         </form>
         {{ end }}
     </div>
-    <footer >
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
-        </div>
-    </footer>
-    
+
 </body>
 </html>

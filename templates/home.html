@@ -18,11 +18,11 @@
 
         .navbar-brand {
             font-weight: bold;
-            color: rgb(0, 0, 109); /* Белый цвет для названия */
+            color: rgb(0, 0, 109); /* Цвет для названия */
         }
 
         .navbar-nav .nav-link {
-            color: rgb(0,0,109); /* Белый цвет для ссылок */
+            color: rgb(0, 0, 109); /* Цвет для ссылок */
         }
 
         .navbar-nav .nav-link:hover {
@@ -46,11 +46,13 @@
                 left: 0%;
                 transition-timing-function: ease-in; /* Медленно в начале */
             }
+
             50% {
                 width: 100%;
                 left: 0%;
                 transition-timing-function: linear; /* Быстро в середине */
             }
+
             100% {
                 width: 100%;
                 left: 0%;
@@ -60,24 +62,89 @@
 
         .welcome-text {
             position: absolute; /* Абсолютное позиционирование для наложения на изображение */
-            top: calc(60px + 40%); /* Положение текста по вертикали (под полоской) */
+            top: calc(60px + 47%); /* Положение текста по вертикали (под полоской) */
             left: 50%; /* Центрирование по горизонтали */
             transform: translate(-50%, -50%); /* Центрирование текста относительно его размера */
-            font-size: 70px; /* Размер шрифта */
+            font-size: 50px; /* Размер шрифта */
             color: rgb(111, 111, 255); /* Цвет текста (белый) для контраста с фоном */
             text-align: center; /* Центрирование текста */
-            text-shadow: 1px 1px 5px rgb(27, 27, 27); /* Небольшая тень */
+            text-shadow: 1px 1px 1px rgb(27, 27, 27); /* Небольшая тень */
             font-family: Georgia, 'Times New Roman', Times, serif;
         }
 
         .full-screen-image {
             position: relative;
             width: 100%;
-            height: calc(100vh - 60px); /* Высота экрана минус высота полоски */
+            height: 100vh; /* Высота экрана минус высота полоски */
             background-image: url('https://i.pinimg.com/originals/9c/fd/08/9cfd08ce6af3193b61cd847d928c2c22.jpg');
             background-size: cover; /* Заполнение изображения по размеру контейнера */
             background-position: center; /* Центрирование изображения */
         }
+
+        /* Стили для качающейся иконки */
+        .swinging-icon {
+            position: fixed;
+            bottom: 50px; /* Исходное положение лампочки */
+            left: 51.5%;
+            transform: translateX(-50%);
+            animation: swing 2s infinite ease-in-out;
+            cursor: pointer;
+            z-index: 10; /* Увеличим z-index, чтобы лампочка была поверх панели */
+            transition: bottom 0.5s ease; /* Плавное перемещение лампочки */
+        }
+
+        @keyframes swing {
+            0% {
+                transform: translate(-50%, 0) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(-50%, 0) rotate(15deg);
+            }
+
+            100% {
+                transform: translate(-50%, 0) rotate(0deg);
+            }
+        }
+
+        /* Стили для панели */
+        .sliding-panel {
+    display: flex; /* Используем Flexbox для выравнивания содержимого */
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center; /* Центрируем по вертикали */
+    position: fixed;
+    bottom: -100%; /* Панель скрыта по умолчанию */
+    left: 0;
+    width: 100%;
+    height: 130px; /* Высота панели */
+    background-color: rgba(64, 224, 208, 0.80); /* Полупрозрачный фон */
+    box-shadow: 0 0px 10px rgb(110, 110, 255);
+    transition: bottom 0.7s ease; /* Плавное появление и исчезновение */
+    padding: 20px;
+    text-align: center; /* Центрирование текста по горизонтали */
+}
+
+
+        .sliding-panel.active {
+            bottom: 0; /* Панель выдвигается вверх */
+        }
+
+        .subtext {
+            font-size: 32px; /* Установите размер шрифта меньше, чем у заголовка */
+            color: rgb(111, 111, 255); /* Цвет текста, чтобы сохранить стиль */
+            text-align: center; /* Центрирование текста */
+            text-shadow: 1px 1px 1px rgb(27, 27, 27); /* Небольшая тень */
+            font-family: Georgia, 'Times New Roman', Times, serif; /* Шрифт как у заголовка */
+        }
+
+        .small-subtext {
+            font-size: 27px; /* Установите размер шрифта меньше */
+            color: rgb(111, 111, 255); /* Цвет текста */
+            text-align: center; /* Центрирование текста */
+            text-shadow: 1px 1px 1px rgb(27, 27, 27); /* Небольшая тень */
+            font-family: Georgia, 'Times New Roman', Times, serif; /* Шрифт как у заголовка */
+        }
+
     </style>
 </head>
 
@@ -112,13 +179,25 @@
 
     <!-- Полоска под заголовком -->
     <div class="progress-bar"></div>
-
     <!-- Полноэкранное изображение -->
     <div class="full-screen-image"></div>
 
     <!-- Текст приветствия -->
     <div class="welcome-text">
-        Добро пожаловать на сайт по найму нянь!
+        Nanny Market!<br>
+        <span class="subtext">
+            Простота выбора, проверенные рекомендации и отзывы — все для вашего спокойствия.
+        </span>
+    </div>
+
+    <!-- Качающаяся иконка -->
+    <div class="swinging-icon" onclick="togglePanel()">
+        <img src="https://cdn-icons-png.flaticon.com/512/32/32177.png" alt="Lamp Icon" width="50">
+    </div>
+
+    <!-- Панель, которая будет появляться и исчезать -->
+    <div class="sliding-panel" id="slidingPanel">
+        <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
     </div>
 
     <div class="container mt-5">
@@ -137,5 +216,21 @@
         {{ end }}
     </div>
 
+    <script>
+        // Функция для переключения панели
+        function togglePanel() {
+            const panel = document.getElementById('slidingPanel');
+            const icon = document.querySelector('.swinging-icon');
+
+            panel.classList.toggle('active'); // Переключение класса active
+            // Поднимем лампочку выше панели
+            if (panel.classList.contains('active')) {
+                icon.style.bottom = '160px'; // Поднимаем лампочку, когда панель активна (уменьшенное расстояние)
+            } else {
+                icon.style.bottom = '50px'; // Возвращаем лампочку в исходное положение
+            }
+        }
+    </script>
 </body>
+
 </html>

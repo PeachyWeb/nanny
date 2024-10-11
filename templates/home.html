@@ -145,6 +145,68 @@
             font-family: Georgia, 'Times New Roman', Times, serif; /* Шрифт как у заголовка */
         }
 
+        .custom-user-btn {
+    padding: 13px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: rgb(33, 104, 97); /* Зеленый цвет для кнопки */
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4); /* Тень по умолчанию */
+    margin-left: 23px;
+    margin-top: -12px;
+}
+
+.custom-user-btn:hover {
+    background-color: rgb(21, 63, 59); /* Более темный зеленый при наведении */
+    box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6); /* Увеличенная тень */
+    transform: translateY(-3px); /* Поднимаем кнопку при наведении */
+}
+
+.btn-secondary {
+    padding: 13px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: rgb(33, 104, 97); /* Зеленый цвет для кнопки */
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4); /* Тень по умолчанию */
+    margin-left: 23px;
+    margin-top: -12px;
+}
+
+.btn-secondary:hover {
+    background-color: rgb(21, 63, 59); /* Более темный зеленый при наведении */
+    box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6); /* Увеличенная тень */
+    transform: translateY(-3px); /* Поднимаем кнопку при наведении */
+}
+
+.btn-primary {
+    padding: 13px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: rgb(33, 104, 97); /* Зеленый цвет для кнопки */
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4); /* Тень по умолчанию */
+    margin-left: 23px;
+    margin-top: -12px;
+}
+
+.btn-primary:hover {
+    background-color: rgb(21, 63, 59); /* Более темный зеленый при наведении */
+    box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6); /* Увеличенная тень */
+    transform: translateY(-3px); /* Поднимаем кнопку при наведении */
+}
     </style>
 </head>
 
@@ -196,25 +258,29 @@
     </div>
 
     <!-- Панель, которая будет появляться и исчезать -->
-    <div class="sliding-panel" id="slidingPanel">
+<div class="sliding-panel" id="slidingPanel">
+    <div class="d-flex justify-content-between align-items-center">
         <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
-    </div>
+        <div>
+            {{ if eq .Role "admin" }}
+            <form action="/admin_page" method="GET">
+                <button type="submit" class="btn-secondary">Страница админа</button>
+            </form>
+            {{ else if eq .Role "nanny" }}
+            <form action="/edit_nanny" method="GET">
+                <button type="submit" class="btn-primary">Каталог нянь</button>
+            </form>
+            {{ else if eq .Role "user" }}
+            <form action="/become_nanny_guide" method="GET">
+                <button type="submit" class="custom-user-btn">Стать няней</button>
+            </form>
+            
+{{ end }}
 
-    <div class="container mt-5">
-        {{ if eq .Role "admin" }}
-        <h2>Панель администратора</h2>
-        <form action="/admin_page" method="GET">
-            <button type="submit" class="btn btn-secondary">Перейти на админскую страницу</button>
-        </form>
-
-        {{ else if eq .Role "nanny" }}
-        <h2>Панель няни</h2>
-        <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
-        <form action="/edit_nanny" method="GET">
-            <button type="submit" class="btn btn-primary">Перейти в каталог нянь</button>
-        </form>
-        {{ end }}
+        </div>
     </div>
+</div>
+
 
     <script>
         // Функция для переключения панели

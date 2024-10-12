@@ -9,48 +9,187 @@
     <style>
         body {
             background-color: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .navbar {
+            background-color: turquoise;
         }
 
         .navbar-brand {
             font-weight: bold;
+            color: rgb(0, 0, 109);
         }
 
-        .card-img-top {
-            height: 250px;
-            object-fit: cover;
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
         }
 
-        .card {
-            transition: transform 0.2s;
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
         }
 
-        .card:hover {
-            transform: scale(1.05);
-        }
-
-        .filter-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        footer {
-            position: fixed;
-            bottom: 0;
+        .progress-bar {
+            position: absolute;
+            height: 5px;
+            background-color: #007bff;
+            box-shadow: 0 4px 10px rgba(0, 140, 255, 0.5);
+            animation: slide 5s forwards;
+            border: 2px solid silver;
+            top: 60px;
             width: 100%;
-            text-align: center;
-            background-color: white;
-            padding: 10px;
         }
 
+        @keyframes slide {
+            0% {
+                width: 0%;
+                left: 0%;
+                transition-timing-function: ease-in;
+            }
+
+            50% {
+                width: 100%;
+                left: 0%;
+                transition-timing-function: linear;
+            }
+
+            100% {
+                width: 100%;
+                left: 0%;
+                transition-timing-function: ease-out;
+            }
+        }
+
+        .welcome-text {
+            position: absolute;
+            top: calc(60px + 47%);
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 50px;
+            color: rgb(111, 111, 255);
+            text-align: center;
+            text-shadow: 1px 1px 1px rgb(27, 27, 27);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .full-screen-image {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background-image: url('https://i.pinimg.com/originals/9c/fd/08/9cfd08ce6af3193b61cd847d928c2c22.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .swinging-icon {
+            position: fixed;
+            bottom: 50px;
+            left: 51.5%;
+            transform: translateX(-50%);
+            animation: swing 2s infinite ease-in-out;
+            cursor: pointer;
+            z-index: 10;
+            transition: bottom 0.5s ease;
+        }
+
+        @keyframes swing {
+            0% {
+                transform: translate(-50%, 0) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(-50%, 0) rotate(15deg);
+            }
+
+            100% {
+                transform: translate(-50%, 0) rotate(0deg);
+            }
+        }
+
+        .sliding-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 130px;
+            background-color: rgba(64, 224, 208, 0.80);
+            box-shadow: 0 0px 10px rgb(110, 110, 255);
+            transition: bottom 0.7s ease;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sliding-panel.active {
+            bottom: 0;
+        }
+
+        .subtext {
+            font-size: 32px;
+            color: rgb(111, 111, 255);
+            text-align: center;
+            text-shadow: 1px 1px 1px rgb(27, 27, 27);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .small-subtext {
+            font-size: 27px;
+            color: rgb(111, 111, 255);
+            text-align: center;
+            text-shadow: 1px 1px 1px rgb(27, 27, 27);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .custom-user-btn {
+            padding: 13px 25px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            background-color: rgb(33, 104, 97);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+            margin-left: 23px;
+            margin-top: -12px;
+        }
+
+        .custom-user-btn:hover {
+            background-color: rgb(21, 63, 59);
+            box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary, .btn-primary {
+            padding: 13px 25px;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            background-color: rgb(33, 104, 97);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+            margin-left: 23px;
+            margin-top: -12px;
+        }
+
+        .btn-secondary:hover, .btn-primary:hover {
+            background-color: rgb(21, 63, 59);
+            box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6);
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 
 <body>
 
     <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -60,7 +199,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                        <a class="nav-link" href="/main">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/calendar">Календарь</a>
@@ -68,23 +210,36 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/profile">Профиль</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/order-history">История заказов</a> <!-- Кнопка "История заказов" -->
-                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="container mt-5">
-        <h1>Welcome, {{.UserName}}!</h1>
-        <h2>Your role: {{.Role}}</h2>
 
+    <!-- Полоска под заголовком -->
+    <div class="progress-bar"></div>
+
+    <!-- Полноэкранное изображение -->
+    <div class="full-screen-image"></div>
+
+    <!-- Текст приветствия -->
+    <div class="welcome-text">
+        Nanny Market!<br>
+        <span class="subtext">
+            Простота выбора, проверенные рекомендации и отзывы — все для вашего спокойствия.
+        </span>
+    </div>
+    <!-- Качающаяся иконка -->
+    <div class="swinging-icon" onclick="togglePanel()">
+        <img src="https://cdn-icons-png.flaticon.com/512/32/32177.png" alt="Lamp Icon" width="50">
+    </div>
+
+    <!-- Основной контент -->
+    <div class="container mt-5">
         {{ if eq .Role "admin" }}
         <h2>Панель администратора</h2>
         <form action="/admin_page" method="GET">
             <button type="submit" class="btn btn-secondary">Перейти на админскую страницу</button>
         </form>
-       
         {{ else if eq .Role "nanny" }}
         <h2>Панель няни</h2>
         <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
@@ -93,17 +248,64 @@
         </form>
         {{ else if eq .Role "user" }}
         <h2>Станьте няней!</h2>
-        <p>Если вы хотите стать няней, пожалуйста, ознакомьтесь с гайдом, который расскажет вам, какие документы и формы необходимы для регистрации.</p>
+        <p>Если вы хотите стать няней, ознакомьтесь с гайдом по регистрации.</p>
         <form action="/become_nanny_guide" method="GET">
-            <button type="submit" class="btn btn-success">Посмотреть гайд по регистрации няней</button>
+            <button type="submit" class="btn btn-success">Посмотреть гайд</button>
         </form>
         {{ end }}
     </div>
-    <footer >
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+
+    <!-- Панель внизу экрана -->
+    <div class="sliding-panel" id="slidingPanel">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                {{ if eq .Role "admin" }}
+                <p class="small-subtext">Вы можете зайти на страницу администратора</p>
+                <form action="/admin_page" method="GET">
+                    <button type="submit" class="btn-secondary">Страница админа</button>
+                </form>
+                {{ else if eq .Role "nanny" }}
+                <p class="small-subtext">Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
+                <form action="/edit_nanny" method="GET">
+                    <button type="submit" class="btn-primary">Каталог нянь</button>
+                </form>
+                {{ else if eq .Role "user" }}
+                <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
+                <form action="/become_nanny_guide" method="GET">
+                    <button type="submit" class="custom-user-btn">Стать няней</button>
+                </form>
+                {{ end }}
+            </div>
         </div>
-    </footer>
+    </div>
     
+
+    <!-- Скрипты -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () {
+                var slidingPanel = document.getElementById('slidingPanel');
+                slidingPanel.classList.add('active');
+            }, 8000); // Панель появится через 8 секунд
+        });
+    </script>
+    <script>
+        // Функция для переключения панели
+        function togglePanel() {
+            const panel = document.getElementById('slidingPanel');
+            const icon = document.querySelector('.swinging-icon');
+
+            panel.classList.toggle('active'); // Переключение класса active
+            // Поднимем лампочку выше панели
+            if (panel.classList.contains('active')) {
+                icon.style.bottom = '160px'; // Поднимаем лампочку, когда панель активна (уменьшенное расстояние)
+            } else {
+                icon.style.bottom = '50px'; // Возвращаем лампочку в исходное положение
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="ru">
 
 <head>
@@ -10,26 +10,31 @@
         body {
             padding: 20px;
         }
+
         h1 {
             margin-bottom: 20px;
         }
+
         /* Стиль для календаря */
         .calendar {
             display: flex;
             flex-wrap: wrap;
             margin-top: 20px;
         }
+
         .day {
             border: 1px solid #ddd;
             padding: 10px;
-            width: 14.28%; /* 7 дней в ряду */
+            width: 14.28%;
             box-sizing: border-box;
             text-align: center;
             margin-bottom: 10px;
         }
+
         .busy {
             background-color: #f8d7da;
         }
+
         .free {
             background-color: #d4edda;
         }
@@ -57,7 +62,7 @@
                         <a class="nav-link" href="/profile">Профиль</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/order-history">История заказов</a> <!-- Кнопка "История заказов" -->
+                        <a class="nav-link" href="/order-history">История заказов</a>
                     </li>
                 </ul>
             </div>
@@ -66,14 +71,36 @@
 
     <h1>Календарь пользователя {{ .UserName }}</h1>
 
+    <!-- Выбор месяца и года -->
+    <form method="get" action="/calendar">
+        <div class="form-group">
+            <label for="month">Выберите месяц:</label>
+            <select name="month" id="month" class="form-control" onchange="this.form.submit()">
+                {{ range .Months }}
+                <option value="{{ .Index }}" {{ if eq $.SelectedMonthIndex .Index }}selected{{ end }}>
+                    {{ .Name }}
+                </option>
+                {{ end }}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="year">Выберите год:</label>
+            <select name="year" id="year" class="form-control" onchange="this.form.submit()">
+                {{ range .Years }}
+                <option value="{{ . }}" {{ if eq $.SelectedYear . }}selected{{ end }}>
+                    {{ . }}
+                </option>
+                {{ end }}
+            </select>
+        </div>
+    </form>
+
     <div class="calendar">
-        {{ range .Days }}
-        <div class="day {{ if index $.BusyDays . }}busy{{ else }}free{{ end }}">
-            <strong>День {{ . }}</strong><br>
-            {{ if index $.BusyDays . }}
-            <span>Занят</span>
-            {{ else }}
-            <button class="btn btn-info">Добавить событие</button>
+        {{ range .CurrentMonth.Days }}
+        <div class="day {{ if .IsBusy }}busy{{ else }}free{{ end }}">
+            <strong>{{ .Day }}</strong><br>
+            {{ if .IsBusy }}
+            <a href="/order-details?day={{ .Day }}&month={{ $.SelectedMonthIndex }}&year={{ $.SelectedYear }}" class="btn btn-info">Посмотреть заказ</a>
             {{ end }}
         </div>
         {{ end }}

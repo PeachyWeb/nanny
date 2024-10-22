@@ -20,6 +20,9 @@ func main() {
 
 	http.HandleFunc("/order/{order_id}/review", handlers.AddReviewForOrderHandler)
 
+	//календарь
+	http.HandleFunc("/order-details", handlers.OrderDetailsHandler)
+
 	// Страницы для ролей
 	http.HandleFunc("/admin_page", handlers.AdminPage)
 	http.HandleFunc("/edit_nanny", handlers.EditNannyHandler) // Обработчик для редактирования профиля

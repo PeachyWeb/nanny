@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали заказа</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Детали заказа</h1>
+
+    <p><strong>Няня:</strong> {{ .NannyName }}</p>
+    <p><strong>Начало:</strong> {{ .StartTime }}</p>
+    <p><strong>Конец:</strong> {{ .EndTime }}</p>
+
+    <a href="/calendar" class="btn btn-primary">Вернуться к календарю</a>
+
+    <!-- Подвал -->
+    <footer class="bg-light py-3 text-center mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

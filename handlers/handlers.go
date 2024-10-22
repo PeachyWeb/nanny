@@ -129,6 +129,7 @@ var TmplCalendar = template.Must(template.ParseFiles("templates/calendar.html"))
 var TmplProfile = template.Must(template.ParseFiles("templates/profile.html"))
 var TmplNannyGuide = template.Must(template.ParseFiles("templates/nanny_guid.html"))
 var TmplOrderHistory = template.Must(template.ParseFiles("templates/order_history.html"))
+var TmplOrderDetails = template.Must(template.ParseFiles("templates/order_details.html"))
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {

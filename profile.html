@@ -7,167 +7,112 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f8f9fa; /* Можно оставить или убрать */
+            background-image: url('https://i.pinimg.com/originals/bf/a9/da/bfa9dade5dc69d6003c90026ab21fa3d.jpg');
+            background-size: cover; /* Покрывает весь фон */
+            background-position: center; /* Центрирует изображение */
+            background-repeat: no-repeat; /* Не повторяет изображение */
         }
 
         .navbar-brand {
             font-weight: bold;
         }
 
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            background-color: white;
-            padding: 10px;
+        .btn {
+            color: #1c7582;
+            text-decoration: underline;
         }
 
-        /* Контейнер с полосками */
+        /* Внешний контейнер */
         .profile-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px); /* Учитываем высоту футера */
-    padding: 0 5px;
-    border-left: 5px solid #007bff;
-    border-right: 5px solid #007bff;
-    margin: 0 375px;
-    background-image: url('https://avatars.mds.yandex.net/get-mpic/11375416/2a0000018c0214ce9c526e9dc29b5a5a7891/900x1200'); /* Добавляем фоновое изображение */
-    background-size: cover; /* Чтобы изображение занимало весь контейнер */
-    background-position: center; /* Центрируем изображение */
-    border-left: 1px solid #008087; /* Уменьшена ширина и изменен цвет на черный */
-    border-right: 1px solid #008087; /* Уменьшена ширина и изменен цвет на черный */
-    box-shadow: -6px 0 5px -6px #008087, /* Тень слева */
-                6px 0 5px -6px #008087;  /* Тень справа */
-}
-
-button.btn-custom:hover, #edit-form button:hover {
-    background-color: #005054 !important; /* Заменяем синий цвет на этот цвет */
-}
-
-a.nav-link[href="/"] {
-    color: #005054;
-}
-
-.form-group button {
-        display: inline-block;
-        margin-right: 10px;
-    }
-
-    .btn-custom {
-        background-color: #005054; /* Синий цвет */
-        color: white;
-        padding: 8px 20px;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        margin-top: 10px;
-        text-align: center;
-    }
-
-        .profile-info {
-            text-align: left;
-            width: 100%;
-            max-width: 500px;
-            padding: 20px 10px; /* Увеличил отступы для контента */
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
-        /* Стили для формы */
-        .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+        /* Заголовок профиля */
+        .profile-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #333;
         }
 
-        .form-group label {
-            width: 100px; /* Фиксированная ширина для выравнивания */
-            margin-right: 10px;
-            text-align: right;
+        /* Небольшой контейнер для разделов */
+        .info-box {
+            max-width: 1100px;
+            margin: 15px auto;
+            padding: 15px;
+            background-color: transparent; /* Убирает фон, оставляя контейнер прозрачным */
+            border: 1px solid #c6c6c6; /* Добавляем границу (если необходимо) */
+            border-radius: 10px;
+            position: relative;
+            padding-top: 35px; /* Оставляем место для метки */
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="number"] {
-            flex-grow: 1;
-            padding: 5px;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-            min-width: 220px;
+        /* Жирная метка для каждого раздела */
+        .info-box-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            background-color: transparent; 
         }
 
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
+        /* Стиль для меток "Имя:", "Фамилия:" и т.д. внутри контейнеров */
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: normal;
+            margin-left: 6px;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        .logout-btn {
+            margin-left: 10px;
         }
 
-        h1 {
-            font-size: 2.5rem; /* Уменьшите размер шрифта */
-            margin-bottom: 50px; /* Можете настроить нижний отступ по желанию */
+        .exit {
+            margin-top: 15px;
             text-align: center;
-            margin-top: -105px;
         }
-        
-        .background-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url('https://avatars.mds.yandex.net/get-mpic/11375416/2a0000018c0214ce9c526e9dc29b5a5a7891/900x1200');
-    background-size: cover;
-    background-position: center;
-    z-index: -1; /* Помещаем изображение на задний план */
-}
 
-.label-username {
-    margin-left: -40px; /* Отступ для Логина */
-}
+        /* Стили для кнопки "Изменить данные" */
+        #toggleButton {
+            color: #1c7582 !important; /* Бирюзовый цвет с использованием !important */
+            cursor: pointer;
+            text-decoration: underline; /* Всегда подчеркивает текст */
+        }
 
-.label-first-name {
-    margin-left: -56px; /* Отступ для Имени */
-}
-
-.label-last-name {
-    margin-left: -17px; /* Отступ для Фамилии */
-}
-
-.label-patronymic {
-    margin-left: -15px; /* Отступ для Отчества */
-}
-
-.label-city {
-    margin-left: -40px; /* Отступ для Города */
-}
-
-.label-phone {
-    margin-left: -20px; /* Отступ для Телефона */
-}
-
-.label-age {
-    margin-left: -26px; /* Отступ для Возраста */
-}
-
-.form-group label {
-    font-size: 1.1rem; /* Увеличьте размер шрифта для меток */
-}
-
-.form-group span {
-    font-size: 1.1rem; /* Увеличьте размер шрифта для значений */
-    line-height: 1.5; /* Увеличьте высоту строки для лучшей читаемости */
-    margin-left: 20px;
-}
-
+        /* Добавляем стили для состояния ссылки при наведении */
+        #toggleButton:hover {
+            color: #22636d !important; /* Более темный бирюзовый цвет при наведении */
+        }
     </style>
+    <script>
+        function toggleForm() {
+            const displayForm = document.getElementById("displayForm");
+            const editForm = document.getElementById("editForm");
+            const button = document.getElementById("toggleButton");
+
+            if (displayForm.style.display === "none") {
+                displayForm.style.display = "block";
+                editForm.style.display = "none";
+                button.textContent = "Изменить данные";
+            } else {
+                displayForm.style.display = "none";
+                editForm.style.display = "block";
+                button.textContent = "Отменить";
+            }
+        }
+    </script>
 </head>
 <body>
 
@@ -198,127 +143,74 @@ a.nav-link[href="/"] {
         </div>
     </nav>
 
-    <!-- Контейнер с полосками и профилем -->
+    <!-- Внешний контейнер профиля -->
     <div class="profile-container">
-        <div class="background-image"></div>
-        <div class="profile-info">
-            <h1>Профиль пользователя</h1>
-            
-            <!-- Данные пользователя -->
-            <div class="form-group">
-                <label for="username" class="label-username">Логин:</label>
-                <span id="username">{{ .UserName }}</span>
-            </div>
-            <div class="form-group">
-                <label for="first_name" class="label-first-name">Имя:</label>
-                <span id="first_name">{{ .FirstName }}</span>
-                <input type="text" id="edit_first_name" name="first_name" value="{{ .FirstName }}" style="display: none;" required>
-            </div>
-            <div class="form-group">
-                <label for="last_name" class="label-last-name">Фамилия:</label>
-                <span id="last_name">{{ .LastName }}</span>
-                <input type="text" id="edit_last_name" name="last_name" value="{{ .LastName }}" style="display: none;" required>
-            </div>
-            <div class="form-group">
-                <label for="patronymic" class="label-patronymic">Отчество:</label>
-                <span id="patronymic">{{ .Patronymic }}</span>
-                <input type="text" id="edit_patronymic" name="patronymic" value="{{ .Patronymic }}" style="display: none;">
-            </div>
-            <div class="form-group">
-                <label for="city" class="label-city">Город:</label>
-                <span id="city">{{ .City }}</span>
-                <input type="text" id="edit_city" name="city" value="{{ .City }}" style="display: none;" required>
-            </div>
-            <div class="form-group">
-                <label for="phone" class="label-phone">Телефон:</label>
-                <span id="phone">{{ .Phone }}</span>
-                <input type="text" id="edit_phone" name="phone" value="{{ .Phone }}" style="display: none;" required>
-            </div>
-            <div class="form-group">
-                <label for="age" class="label-age">Возраст:</label>
-                <span id="age">{{ .Age }}</span>
-                <input type="number" id="edit_age" name="age" value="{{ .Age }}" style="display: none;" required>
-            </div>
-            
+        <!-- Заголовок профиля -->
+        <div class="profile-title">О себе</div>
 
-            <!-- Форма для редактирования данных -->
-            <form id="edit-form" action="/profile/update" method="post" onsubmit="return updateProfile(event);" style="display: none;">
-                <button type="submit" class="btn-custom">Сохранить изменения</button>
-            </form>            
+        <!-- Форма для отображения данных -->
+        <div id="displayForm">
+            <!-- Персональные данные -->
+            <div class="info-box">
+                <span class="info-box-label">Персональные данные</span>
+                <p><span class="info-label">Имя:</span> {{ .FirstName }}</p>
+                <p><span class="info-label">Фамилия:</span> {{ .LastName }}</p>
+                <p><span class="info-label">Отчество:</span> {{ .Patronymic }}</p>
+                <p><span class="info-label">Возраст:</span> {{ .Age }}</p>
+            </div>
 
-            <!-- Кнопки для редактирования и выхода -->
-            <button id="edit-button" class="btn-custom" onclick="toggleEdit()">Изменить данные</button>
-            <a class="nav-link" href="/">Выход</a>
+            <!-- Логин -->
+            <div class="info-box">
+                <span class="info-box-label">Логин</span>
+                <p><span class="info-label">Логин:</span> {{ .UserName }}</p>
+            </div>
+
+            <!-- Город -->
+            <div class="info-box">
+                <span class="info-box-label">Город</span>
+                <p><span class="info-label">Город:</span> {{ .City }}</p>
+            </div>
+
+            <!-- Телефон -->
+            <div class="info-box">
+                <span class="info-box-label">Телефон</span>
+                <p><span class="info-label">Телефон:</span> {{ .Phone }}</p>
+            </div>
+        </div>
+
+        <!-- Форма для редактирования данных (по умолчанию скрыта) -->
+        <form id="editForm" action="/profile/update" method="post" style="display: none;">
+            <label for="first_name">Имя:</label>
+            <input type="text" id="first_name" name="first_name" value="{{ .FirstName }}" class="form-control mb-2" required>
+            
+            <label for="last_name">Фамилия:</label>
+            <input type="text" id="last_name" name="last_name" value="{{ .LastName }}" class="form-control mb-2" required>
+            
+            <label for="patronymic">Отчество:</label>
+            <input type="text" id="patronymic" name="patronymic" value="{{ .Patronymic }}" class="form-control mb-2">
+            
+            <label for="city">Город:</label>
+            <input type="text" id="city" name="city" value="{{ .City }}" class="form-control mb-2" required>
+            
+            <label for="phone">Телефон:</label>
+            <input type="text" id="phone" name="phone" value="{{ .Phone }}" class="form-control mb-2" required>
+            
+            <label for="age">Возраст:</label>
+            <input type="number" id="age" name="age" value="{{ .Age }}" class="form-control mb-2" required>
+
+            <!-- Кнопка "Сохранить изменения" -->
+<div class="text-center mt-3">
+    <button type="submit" class="btn">Сохранить изменения</button>
+</div>
+
+        </form>
+
+        <!-- Кнопка выхода из аккаунта -->
+        <!-- Кнопки "Изменить данные" и "Выход из аккаунта" -->
+        <div class="exit">
+            <a id="toggleButton" onclick="toggleForm()" class="text-primary me-3" role="button">Изменить данные</a>
+            <a href="/" class="text-danger">Выход из аккаунта</a>
         </div>
     </div>
-
-    <!-- Футер -->
-    <footer>
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
-        </div>
-    </footer>
-
-    <script>
-        function toggleEdit() {
-            const editForm = document.getElementById('edit-form');
-            const profileInfo = document.querySelector('.profile-info');
-            const editButton = document.getElementById('edit-button');
-
-            const spans = profileInfo.querySelectorAll('span:not(#username)'); // Не затрагиваем логин
-            const inputs = profileInfo.querySelectorAll('input[type="text"], input[type="number"]');
-
-            const isEditing = inputs[0].style.display === "inline"; // Проверяем, в режиме редактирования или нет
-
-            if (!isEditing) {
-                // Показать поля для редактирования
-                spans.forEach(span => span.style.display = "none");
-                inputs.forEach(input => input.style.display = "inline");
-                editForm.style.display = "block"; // Показать форму для сохранения
-                editButton.textContent = "Отмена"; // Изменить текст кнопки
-            } else {
-                // Скрыть поля для редактирования
-                spans.forEach(span => span.style.display = "inline");
-                inputs.forEach(input => input.style.display = "none");
-                editForm.style.display = "none"; // Скрыть форму для сохранения
-                editButton.textContent = "Изменить данные"; // Изменить текст кнопки
-            }
-        }
-
-        function updateProfile(event) {
-            event.preventDefault(); // Остановить стандартное поведение формы
-
-            // Получаем значения из полей ввода (без логина)
-            const updatedData = {
-                first_name: document.getElementById('edit_first_name').value,
-                last_name: document.getElementById('edit_last_name').value,
-                patronymic: document.getElementById('edit_patronymic').value,
-                city: document.getElementById('edit_city').value,
-                phone: document.getElementById('edit_phone').value,
-                age: document.getElementById('edit_age').value
-            };
-
-            // Обновляем отображаемую информацию на странице
-            document.getElementById('first_name').innerText = updatedData.first_name;
-            document.getElementById('last_name').innerText = updatedData.last_name;
-            document.getElementById('patronymic').innerText = updatedData.patronymic;
-            document.getElementById('city').innerText = updatedData.city;
-            document.getElementById('phone').innerText = updatedData.phone;
-            document.getElementById('age').innerText = updatedData.age;
-
-            // Вернемся в режим просмотра
-            toggleEdit();
-            // Отправляем данные на сервер
-            fetch('/profile/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedData)
-            });
-        }
-    </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

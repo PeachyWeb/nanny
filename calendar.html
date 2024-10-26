@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        /* Удаляем отступ сверху у тела */
+        body {
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+        }
+
+        /* Контейнер для календаря, чтобы центрировать ячейки */
+        .calendar-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px; /* Отступ сверху для календаря */
+            padding: 0 20px;
+        }
+
+        /* Стиль для календаря */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px 0px; /* Отступы между ячейками */
+            max-width: 100%;
+        }
+
+        /* Стиль для ячеек дня */
+        .day {
+            border-radius: 5px;
+            padding: 10px;
+            width: 83%; /* Ячейки автоматически подстраиваются */
+            aspect-ratio: 1 / 1; /* Делает ячейки квадратными */
+            box-sizing: border-box;
+            text-align: left;
+            position: relative;
+            background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Распределение пространства между элементами */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Стиль для дня недели */
+        .weekday {
+            position: absolute; /* Позволяет свободно позиционировать элемент */
+            top: 10px; /* Отступ сверху */
+            right: 10px; /* Отступ справа */
+            font-size: 0.8em; /* Уменьшенный размер шрифта для дня недели */
+            color: #555; /* Цвет текста для дней недели */
+        }
+
+        /* Стиль для числа в левом верхнем углу */
+        .day-number {
+            position: absolute; /* Позволяет свободно позиционировать элемент */
+            top: 10px; /* Отступ сверху */
+            left: 10px; /* Отступ слева */
+            font-size: 1.2em; /* Размер шрифта для числа */
+            font-weight: bold; /* Жирный текст для числа */
+            color: #555; /* Цвет текста для числа */
+        }
+
+        /* Стиль кнопки для занятых дней */
+        .day.busy {
+            background: linear-gradient(135deg, #5b9b9f, #5b9b9f);
+        }
+
+        /* Стиль для свободных дней */
+        .day.free {
+            background: linear-gradient(135deg, #6ab9bd, #6ab9bd);
+        }
+
+        /* Фиксируем навигацию сверху */
+        .navbar {
+            background-color: turquoise; /* Цвет фона навигационной панели */
+        }
+
+        /* Текст Nanny Market жирным */
+        .navbar-brand {
+            font-weight: bold;
+            color: rgb(0, 0, 109);
+        }
+
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+
+        /* Уменьшение ширины элементов формы */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Центрирование по горизонтали */
+            margin-right: 10px; /* Отступ между элементами */
+        }
+
+        /* Установка ширины селекторов */
+        #month,
+        #year {
+            width: 120px; /* Установите желаемую ширину */
+            text-align: center; /* Центрирование текста в селекторах */
+        }
+
+        .order-button {
+            border: 2px solid #bdf2fe; /* Цвет обводки */
+            border-radius: 5px; /* Закругленные углы */
+            background-color: #bdf2fe; /* Заливка кнопки */
+            color: black; /* Цвет текста */
+            text-align: center; /* Центрирование текста */
+            margin-top: 10px; /* Отступ сверху для кнопки */
+            width: 100%; /* Кнопка занимает всю ширину родителя */
+            display: flex; /* Используем flexbox для центрирования текста */
+            justify-content: center; /* Центрируем текст по горизонтали */
+            align-items: center; /* Центрируем текст по вертикали */
+        }
+
+        .day-info {
+            display: flex;
+            align-items: flex-start; /* Вертикальное выравнивание по верху */
+            justify-content: space-between; /* Пространство между элементами */
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center; /* Центрирование кнопки по горизонтали */
+            align-items: flex-end; /* Выравнивание кнопки по нижнему краю */
+            margin-top: auto; /* Позволяет кнопке оставаться внизу */
+            height: 100%; /* Убедитесь, что контейнер занимает всю высоту родителя */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/order-history">История заказов</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Выбор месяца и года -->
+    <form method="get" action="/calendar" class="text-center">
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="form-group me-3">
+                <label for="month">Месяц:</label>
+                <select name="month" id="month" class="form-control" onchange="this.form.submit()">
+                    {{ range .Months }}
+                    <option value="{{ .Index }}" {{ if eq $.SelectedMonthIndex .Index }}selected{{ end }}>
+                        {{ .Name }}
+                    </option>
+                    {{ end }}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="year">Год:</label>
+                <select name="year" id="year" class="form-control" onchange="this.form.submit()">
+                    {{ range .Years }}
+                    <option value="{{ . }}" {{ if eq $.SelectedYear . }}selected{{ end }}>
+                        {{ . }}
+                    </option>
+                    {{ end }}
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <!-- Контейнер для центрирования календаря -->
+    <div class="calendar-container">
+        <div class="calendar">
+            {{ range .CurrentMonth.Days }}
+            <div class="day {{ if .IsBusy }}busy{{ else }}free{{ end }}">
+                <strong class="day-number">{{ .Day }}</strong>
+                <span class="weekday">{{ .Weekday }}</span>
+                {{ if .IsBusy }}
+                <div class="button-container"> <!-- Новый контейнер для кнопки -->
+                    <a href="/order-details?day={{ .Day }}&month={{ $.SelectedMonthIndex }}&year={{ $.SelectedYear }}" class="btn btn-info order-button">Посмотреть заказ</a>
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+        </div>
+    </div>
+
+</body>
+
+</html>

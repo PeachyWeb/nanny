@@ -1,37 +1,114 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Детали заказа</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
         body {
-            padding: 20px;
+            background-color: #f8f9fa;
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .navbar {
+            background-color: turquoise;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: rgb(0, 0, 109);
+        }
+
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+
+        /* Стиль для контейнера с деталями заказа */
+        .order-details-container {
+            max-width: 700px;
+            margin: 170px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-align: center;
         }
 
         h1 {
-            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
         }
+
+        .info-label {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .btn-primary {
+            margin-top: 15px;
+            background-color: rgb(201, 201, 181);
+            color: black;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            user-select: none;
+        }
+
+        .btn-primary:hover {
+            background-color: rgb(181, 181, 163);
+            color: white;
+        }
+
     </style>
 </head>
 
 <body>
-    <h1>Детали заказа</h1>
 
-    <p><strong>Няня:</strong> {{ .NannyName }}</p>
-    <p><strong>Начало:</strong> {{ .StartTime }}</p>
-    <p><strong>Конец:</strong> {{ .EndTime }}</p>
-
-    <a href="/calendar" class="btn btn-primary">Вернуться к календарю</a>
-
-    <!-- Подвал -->
-    <footer class="bg-light py-3 text-center mt-auto">
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog">Каталог нянь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/calendar">Календарь</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/order-history">История заказов</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </footer>
-</body>
+    </nav>
 
+    <!-- Контейнер для деталей заказа -->
+    <div class="order-details-container">
+        <h1>Детали заказа</h1>
+        <p><strong class="info-label">Няня:</strong> {{ .NannyName }}</p>
+        <p><strong class="info-label">Начало:</strong> {{ .StartTime }}</p>
+        <p><strong class="info-label">Конец:</strong> {{ .EndTime }}</p>
+        <a href="/calendar" class="btn btn-primary">Вернуться к календарю</a>
+    </div>
+    
+
+</body>
 </html>

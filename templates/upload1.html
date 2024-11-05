@@ -7,42 +7,111 @@
     <title>Каталог нянь</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
+        /* Основные стили */
         body {
             background-color: #f8f9fa;
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .navbar {
+            background-color: turquoise;
         }
 
         .navbar-brand {
             font-weight: bold;
+            color: rgb(0, 0, 109);
         }
 
-        .card-img-top {
-            height: 250px;
-            object-fit: cover;
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
         }
 
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+
+        /* Фильтр */
+        .filter-section {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .filter-section label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        #applyFilters {
+            background-color: rgb(0, 0, 109);
+            color: white;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        #applyFilters:hover {
+            background-color: rgb(2, 2, 148);
+        }
+
+        /* Карточки нянь */
         .card {
-            transition: transform 0.2s;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
         }
 
-        .filter-section {
-            background-color: white;
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .card-body {
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            color: rgb(0, 0, 109);
         }
 
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            background-color: white;
-            padding: 10px;
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: rgb(0, 0, 109);
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .text-muted {
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Выравнивание каталога под фильтры */
+        .nanny-catalog-container {
+            margin-left: 0;
         }
     </style>
 </head>
@@ -50,7 +119,7 @@
 <body>
 
     <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -69,48 +138,55 @@
                         <a class="nav-link" href="/profile">Профиль</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/order-history">История заказов</a> <!-- Кнопка "История заказов" -->
+                        <a class="nav-link" href="/order-history">История заказов</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Основной контент -->
     <div class="container py-5">
         <!-- Фильтры -->
-        <div class="row filter-section">
-            <div class="col-md-3">
+        <div class="row filter-section g-3 align-items-end">
+            <div class="col">
                 <label for="filterCity" class="form-label">Город</label>
-                <select id="filterCity" class="form-select">
+                <select id="filterCity" class="form-select shadow-sm rounded">
                     <option value="">Все города</option>
                     <option value="Москва">Москва</option>
                     <option value="Санкт-Петербург">Санкт-Петербург</option>
                     <option value="Казань">Казань</option>
                     <option value="Екатеринбург">Екатеринбург</option>
                     <option value="Нижний Новгород">Нижний Новгород</option>
-                    <!-- Добавьте другие города по необходимости -->
                 </select>
             </div>
-            <div class="col-md-3">
+    
+            <div class="col">
                 <label for="filterExperience" class="form-label">Стаж (лет)</label>
-                <input type="number" id="filterExperience" class="form-control" placeholder="Мин. стаж">
+                <input type="number" id="filterExperience" class="form-control shadow-sm rounded" placeholder="Мин. стаж">
             </div>
-            <div class="col-md-3">
+    
+            <div class="col">
                 <label for="filterPrice" class="form-label">Цена (руб./час)</label>
-                <input type="number" id="filterPrice" class="form-control" placeholder="Макс. цена">
+                <input type="number" id="filterPrice" class="form-control shadow-sm rounded" placeholder="Макс. цена">
             </div>
-            <div class="col-md-3">
+    
+            <div class="col">
                 <label for="filterRating" class="form-label">Рейтинг</label>
-                <input type="number" id="filterRating" class="form-control" step="0.1" placeholder="Мин. рейтинг">
+                <input type="number" id="filterRating" class="form-control shadow-sm rounded" step="0.1" placeholder="Мин. рейтинг">
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button id="applyFilters" class="btn btn-primary w-100">Применить фильтры</button>
+    
+            <div class="col">
+                <button id="applyFilters" class="btn btn-primary w-100 shadow-sm rounded">Применить фильтры</button>
             </div>
         </div>
 
+    
+
+      
+    
+
         <!-- Карточки нянь -->
-        <div class="row g-4" id="nannyCatalog">
+        <div class="row g-4 nanny-catalog-container" id="nannyCatalog">
             {{ range .Nannies }}
             <div class="col-12 col-md-6 col-lg-4 nanny-card" data-city="{{ .City }}" data-experience="{{ .Experience }}"
                 data-price="{{ .Price }}" data-rating="{{ .AverageRating }}">
@@ -121,9 +197,9 @@
                             <h5 class="card-title">{{ .Name }}</h5>
                             <p class="card-text">{{ .Description }}</p>
                             <p class="text-muted">{{ .Price }} руб./час</p>
-                            <p>Стаж: {{ .Experience }}</p>
+                            <p>Стаж: {{ .Experience }} лет</p>
                             <p>Рейтинг: {{ .AverageRating }}</p>
-                            <p>Город: {{ .City }}</p> <!-- Добавлено поле города -->
+                            <p>Город: {{ .City }}</p>
                         </div>
                     </a>
                 </div>
@@ -131,13 +207,6 @@
             {{ end }}
         </div>
     </div>
-
-    <!-- Подвал -->
-    <footer>
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
-        </div>
-    </footer>
 
     <!-- JavaScript для фильтрации и работы корзины -->
     <script type="text/javascript">
@@ -162,42 +231,10 @@
                     const cityMatches = cityValue === "" || city === cityValue;
 
                     if (cityMatches && experience >= experienceValue && price <= priceValue && rating >= ratingValue) {
-                        card.style.display = 'block';
+                        card.style.display = "block";
                     } else {
-                        card.style.display = 'none';
+                        card.style.display = "none";
                     }
-                });
-            });
-
-            // JavaScript для добавления няни в корзину
-            const addToCartButtons = document.querySelectorAll('.add-to-cart');
-
-            addToCartButtons.forEach(button => {
-                button.addEventListener('click', function (event) {
-                    event.preventDefault(); // Предотвращаем переход по ссылке
-                    const nannyId = event.target.dataset.id;
-                    const nannyName = event.target.dataset.name;
-                    const nannyPrice = parseFloat(event.target.dataset.price);
-
-                    // Получаем корзину из localStorage или создаем пустую
-                    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
-
-                    // Ищем няню в корзине по ID
-                    const nannyInCart = cart.find(item => item.id === nannyId);
-                    if (nannyInCart) {
-                        nannyInCart.quantity += 1; // Увеличиваем количество
-                    } else {
-                        cart.push({
-                            id: nannyId,
-                            name: nannyName,
-                            price: nannyPrice,
-                            quantity: 1 // Добавляем няню с количеством 1
-                        });
-                    }
-
-                    // Сохраняем обновленную корзину в localStorage
-                    localStorage.setItem('cartItems', JSON.stringify(cart));
-                    alert('Няня добавлена в корзину!');
                 });
             });
         });

@@ -7,31 +7,130 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f8f9fa; /* Можно оставить или убрать */
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+            background-size: cover; /* Покрывает весь фон */
+            background-position: center; /* Центрирует изображение */
+            background-repeat: no-repeat; /* Не повторяет изображение */
+        }
+
+        .navbar {
+            background-color: turquoise; /* Цвет фона навигационной панели */
         }
 
         .navbar-brand {
             font-weight: bold;
+            color: rgb(0, 0, 109);
         }
 
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            background-color: white;
-            padding: 10px;
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
+        }
+
+        .btn {
+            color: #1c7582;
+            text-decoration: underline;
+        }
+
+        /* Внешний контейнер */
+        .profile-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Заголовок профиля */
+        .profile-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #333;
+        }
+
+        /* Небольшой контейнер для разделов */
+        .info-box {
+            max-width: 1100px;
+            margin: 15px auto;
+            padding: 15px;
+            background-color: transparent; /* Убирает фон, оставляя контейнер прозрачным */
+            border: 1px solid #c6c6c6; /* Добавляем границу (если необходимо) */
+            border-radius: 10px;
+            position: relative;
+            padding-top: 35px; /* Оставляем место для метки */
+        }
+
+        /* Жирная метка для каждого раздела */
+        .info-box-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            background-color: transparent; 
+        }
+
+        /* Стиль для меток "Имя:", "Фамилия:" и т.д. внутри контейнеров */
+        .info-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: normal;
+            margin-left: 6px;
         }
 
         .logout-btn {
             margin-left: 10px;
         }
+
+        .exit {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        /* Стили для кнопки "Изменить данные" */
+        #toggleButton {
+            color: #1c7582 !important; /* Бирюзовый цвет с использованием !important */
+            cursor: pointer;
+            text-decoration: underline; /* Всегда подчеркивает текст */
+        }
+
+        /* Добавляем стили для состояния ссылки при наведении */
+        #toggleButton:hover {
+            color: #22636d !important; /* Более темный бирюзовый цвет при наведении */
+        }
     </style>
+    <script>
+        function toggleForm() {
+            const displayForm = document.getElementById("displayForm");
+            const editForm = document.getElementById("editForm");
+            const button = document.getElementById("toggleButton");
+
+            if (displayForm.style.display === "none") {
+                displayForm.style.display = "block";
+                editForm.style.display = "none";
+                button.textContent = "Изменить данные";
+            } else {
+                displayForm.style.display = "none";
+                editForm.style.display = "block";
+                button.textContent = "Отменить";
+            }
+        }
+    </script>
 </head>
 <body>
 
     <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -50,49 +149,81 @@
                         <a class="nav-link" href="/profile">Профиль</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/order-history">История заказов</a> <!-- Кнопка "История заказов" -->
+                        <a class="nav-link" href="/order-history">История заказов</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <h1>Профиль пользователя</h1>
-    <p>Логин: {{ .UserName }}</p>
-    <p>Имя: {{ .FirstName }}</p>
-    <p>Фамилия: {{ .LastName }}</p>
-    <p>Отчество: {{ .Patronymic }}</p>
-    <p>Город: {{ .City }}</p>
-    <p>Телефон: {{ .Phone }}</p>
-    <p>Возраст: {{ .Age }}</p>
+    <!-- Внешний контейнер профиля -->
+    <div class="profile-container">
+        <!-- Заголовок профиля -->
+        <div class="profile-title">О себе</div>
 
-    <form action="/profile/update" method="post">
-        <label for="first_name">Имя:</label>
-        <input type="text" id="first_name" name="first_name" value="{{ .FirstName }}" required><br>
-        
-        <label for="last_name">Фамилия:</label>
-        <input type="text" id="last_name" name="last_name" value="{{ .LastName }}" required><br>
-        
-        <label for="patronymic">Отчество:</label>
-        <input type="text" id="patronymic" name="patronymic" value="{{ .Patronymic }}"><br>
-        
-        <label for="city">Город:</label>
-        <input type="text" id="city" name="city" value="{{ .City }}" required><br>
-        
-        <label for="phone">Телефон:</label>
-        <input type="text" id="phone" name="phone" value="{{ .Phone }}" required><br>
-        
-        <label for="age">Возраст:</label>
-        <input type="number" id="age" name="age" value="{{ .Age }}" required><br><br>
+        <!-- Форма для отображения данных -->
+        <div id="displayForm">
+            <!-- Персональные данные -->
+            <div class="info-box">
+                <span class="info-box-label">Персональные данные</span>
+                <p><span class="info-label">Имя:</span> {{ .FirstName }}</p>
+                <p><span class="info-label">Фамилия:</span> {{ .LastName }}</p>
+                <p><span class="info-label">Отчество:</span> {{ .Patronymic }}</p>
+                <p><span class="info-label">Возраст:</span> {{ .Age }}</p>
+            </div>
 
-        <button type="submit">Сохранить изменения</button>
-    </form>
-    <a class="nav-link" href="/">Выход</a>
-    <footer>
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
+            <!-- Логин -->
+            <div class="info-box">
+                <span class="info-box-label">Логин</span>
+                <p><span class="info-label">Логин:</span> {{ .UserName }}</p>
+            </div>
+
+            <!-- Город -->
+            <div class="info-box">
+                <span class="info-box-label">Город</span>
+                <p><span class="info-label">Город:</span> {{ .City }}</p>
+            </div>
+
+            <!-- Телефон -->
+            <div class="info-box">
+                <span class="info-box-label">Телефон</span>
+                <p><span class="info-label">Телефон:</span> {{ .Phone }}</p>
+            </div>
         </div>
-    </footer>
-    
+
+        <!-- Форма для редактирования данных (по умолчанию скрыта) -->
+        <form id="editForm" action="/profile/update" method="post" style="display: none;">
+            <label for="first_name">Имя:</label>
+            <input type="text" id="first_name" name="first_name" value="{{ .FirstName }}" class="form-control mb-2" required>
+            
+            <label for="last_name">Фамилия:</label>
+            <input type="text" id="last_name" name="last_name" value="{{ .LastName }}" class="form-control mb-2" required>
+            
+            <label for="patronymic">Отчество:</label>
+            <input type="text" id="patronymic" name="patronymic" value="{{ .Patronymic }}" class="form-control mb-2">
+            
+            <label for="city">Город:</label>
+            <input type="text" id="city" name="city" value="{{ .City }}" class="form-control mb-2" required>
+            
+            <label for="phone">Телефон:</label>
+            <input type="text" id="phone" name="phone" value="{{ .Phone }}" class="form-control mb-2" required>
+            
+            <label for="age">Возраст:</label>
+            <input type="number" id="age" name="age" value="{{ .Age }}" class="form-control mb-2" required>
+
+            <!-- Кнопка "Сохранить изменения" -->
+<div class="text-center mt-3">
+    <button type="submit" class="btn">Сохранить изменения</button>
+</div>
+
+        </form>
+
+        <!-- Кнопка выхода из аккаунта -->
+        <!-- Кнопки "Изменить данные" и "Выход из аккаунта" -->
+        <div class="exit">
+            <a id="toggleButton" onclick="toggleForm()" class="text-primary me-3" role="button">Изменить данные</a>
+            <a href="/" class="text-danger">Выход из аккаунта</a>
+        </div>
+    </div>
 </body>
 </html>

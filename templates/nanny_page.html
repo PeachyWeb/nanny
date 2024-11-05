@@ -7,51 +7,129 @@
     <title>Страница няни</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <style>
+        /* Основные стили страницы */
         body {
             background-color: #f8f9fa;
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Стили для навигационной панели */
+        .navbar {
+            background-color: turquoise; /* Цвет фона навигационной панели */
+            height: 55px;
         }
 
         .navbar-brand {
             font-weight: bold;
+            color: rgb(0, 0, 109);
         }
 
-        .card-img-top {
-            height: 250px;
-            object-fit: cover;
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
         }
 
-        .card {
-            transition: transform 0.2s;
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
         }
 
-        .card:hover {
-            transform: scale(1.05);
+        /* Стили основного контейнера */
+        .container-main {
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 30px;
         }
 
-        .filter-section {
-            background-color: white;
+        /* Левый блок с фото */
+        .profile-photo {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Стиль правой колонки */
+        .form-container {
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
         }
-        
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            background-color: white;
+
+        h1, h2 {
+            color: rgb(0, 0, 109);
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            border-bottom: 2px solid rgb(0, 0, 109);
+            padding-bottom: 5px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        /* Поля ввода */
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Кнопка */
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 8px;
             padding: 10px;
         }
 
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
+
+        /* Отзывы */
+        .reviews {
+            margin-top: 30px;
+        }
+
+        .review-item {
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #e9e9e9;
+            margin-bottom: 10px;
+        }
+
+        .review-item strong {
+            color: rgb(0, 0, 109);
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
     </style>
 </head>
 
 <body>
 
     <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -70,57 +148,69 @@
                         <a class="nav-link" href="/profile">Профиль</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/order-history">История заказов</a> <!-- Кнопка "История заказов" -->
+                        <a class="nav-link" href="/order-history">История заказов</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <h1>{{ .Nanny.Name }}</h1>
-    <p>Город: {{ .Nanny.City }}</p>
-    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}" class="img-fluid mb-4">
+    <!-- Основной контейнер -->
+    <div class="container">
+        <div class="container-main">
+            <div class="row">
+                <!-- Левая колонка с фото -->
+                <div class="col-md-6 text-center">
+                    <img src="{{ .Nanny.PhotoURL }}" alt="{{ .Nanny.Name }}" class="profile-photo mb-4">
+                </div>
 
-    
-    <h2 class="mt-4">Оформить найм няни</h2>
-    <form action="/hire_nanny" method="POST" class="mb-4">
-        <input type="hidden" name="user_id" value="{{ .UserID }}">
-        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}"> <!-- Изменено на .Nanny.ID -->
+                <!-- Правая колонка с формой найма -->
+                <div class="col-md-6 form-container">
+                    <h1>{{ .Nanny.Name }}</h1>
+                    <p class="text-muted">Город: {{ .Nanny.City }}</p>
 
-        <div class="mb-3">
-            <label for="start_time" class="form-label">Время начала:</label>
-            <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+                    <h2>Оформить найм няни</h2>
+                    <form action="/hire_nanny" method="POST">
+                        <input type="hidden" name="user_id" value="{{ .UserID }}">
+                        <input type="hidden" name="nanny_id" value="{{ .Nanny.ID }}">
+
+                        <div class="mb-3">
+                            <label for="start_time" class="form-label">Время начала:</label>
+                            <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="end_time" class="form-label">Время окончания:</label>
+                            <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Нанять няню</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Отзывы -->
+            <div class="reviews">
+                <h2>Отзывы</h2>
+                {{ if .Reviews }}
+                    <ul class="list-unstyled">
+                    {{ range .Reviews }}
+                        <li class="review-item">
+                            <strong>Пользователь {{ .UserID }}</strong> поставил оценку: {{ .Rating }}/5<br>
+                            <em>{{ .Comment }}</em> <br>
+                            <small class="text-muted">Дата: {{ .CreatedAt }}</small>
+                        </li>
+                    {{ end }}
+                    </ul>
+                {{ else }}
+                    <p>Пока нет отзывов</p>
+                {{ end }}
+            </div>
         </div>
+    </div>
 
-        <div class="mb-3">
-            <label for="end_time" class="form-label">Время окончания:</label>
-            <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
-        </div>
-
-        <button type="submit" class="btn btn-success">Нанять няню</button>
-    </form>
-
-   
-
-    <h2>Отзывы</h2>
-    {{ if .Reviews }}
-        <ul>
-        {{ range .Reviews }}
-            <li>
-                <strong>Пользователь {{ .UserID }}</strong> поставил оценку: {{ .Rating }}/5<br>
-                <em>{{ .Comment }}</em> <br>
-                <small>Дата: {{ .CreatedAt }}</small>
-            </li>
-        {{ end }}
-        </ul>
-    {{ else }}
-        <p>Пока нет отзывов</p>
-    {{ end }}
-
-    <footer class="bg-light py-3 text-center mt-auto">
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
-        </div>
-    </footer>
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

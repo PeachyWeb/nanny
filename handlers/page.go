@@ -7,6 +7,66 @@ import (
 	"time"
 )
 
+// Обработчик для страницы пользователя
+func UserPage(w http.ResponseWriter, r *http.Request) {
+	// Получаем сессию
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем идентификатор пользователя в сессии
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	userName, err := GetUserNameByIDFromDB(userID)
+	if err != nil {
+		log.Println("Ошибка при получении имени пользователя:", err)
+		http.Error(w, "Ошибка при получении имени пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	role, err := GetUserRoleByIDFromDB(userID)
+	if err != nil {
+		log.Println("Ошибка при получении роли пользователя:", err)
+		http.Error(w, "Ошибка при получении роли пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	// Подготавливаем данные для шаблона
+	data := struct {
+		UserID   int
+		UserName string
+		Role     string
+	}{
+		UserID:   userID,
+		UserName: userName,
+		Role:     role,
+	}
+
+	err = TmplMain.Execute(w, data)
+	if err != nil {
+		log.Println("Ошибка выполнения шаблона:", err)
+		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
+	}
+}
+
+// Карта для перевода дней недели на русский
+var weekdays = map[time.Weekday]string{
+	time.Monday:    "Понедельник",
+	time.Tuesday:   "Вторник",
+	time.Wednesday: "Среда",
+	time.Thursday:  "Четверг",
+	time.Friday:    "Пятница",
+	time.Saturday:  "Суббота",
+	time.Sunday:    "Воскресенье",
+}
+
 func CatalogPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем сессию
 	session, err := store.Get(r, "session-name")
@@ -64,55 +124,6 @@ func CatalogPage(w http.ResponseWriter, r *http.Request) {
 	// Рендерим шаблон
 	tmpl := ParseTemplate("templates/upload1.html")
 	err = tmpl.Execute(w, data)
-	if err != nil {
-		log.Println("Ошибка выполнения шаблона:", err)
-		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
-	}
-}
-
-// Обработчик для страницы пользователя
-func UserPage(w http.ResponseWriter, r *http.Request) {
-	// Получаем сессию
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		log.Println("Ошибка при получении сессии:", err)
-		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
-		return
-	}
-
-	// Проверяем идентификатор пользователя в сессии
-	userID, ok := session.Values["userID"].(int)
-	if !ok || userID <= 0 {
-		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
-		return
-	}
-
-	userName, err := GetUserNameByIDFromDB(userID)
-	if err != nil {
-		log.Println("Ошибка при получении имени пользователя:", err)
-		http.Error(w, "Ошибка при получении имени пользователя", http.StatusInternalServerError)
-		return
-	}
-
-	role, err := GetUserRoleByIDFromDB(userID)
-	if err != nil {
-		log.Println("Ошибка при получении роли пользователя:", err)
-		http.Error(w, "Ошибка при получении роли пользователя", http.StatusInternalServerError)
-		return
-	}
-
-	// Подготавливаем данные для шаблона
-	data := struct {
-		UserID   int
-		UserName string
-		Role     string
-	}{
-		UserID:   userID,
-		UserName: userName,
-		Role:     role,
-	}
-
-	err = TmplMain.Execute(w, data)
 	if err != nil {
 		log.Println("Ошибка выполнения шаблона:", err)
 		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
@@ -200,7 +211,7 @@ func CalendarHandler(w http.ResponseWriter, r *http.Request) {
 		SelectedMonthIndex: monthIndex,
 		SelectedYear:       year,
 		Months:             []Month{},
-		Years:              generateYears(2020, 2030), // Генерация диапазона годов
+		Years:              generateYears(2020, 2030),
 	}
 
 	// Генерация месяцев для выбора
@@ -209,13 +220,18 @@ func CalendarHandler(w http.ResponseWriter, r *http.Request) {
 		daysCount := daysInMonthInYear(month, year)
 		daysInMonth := make([]Day, daysCount)
 		for day := 1; day <= daysCount; day++ {
-			daysInMonth[day-1] = Day{Day: day, IsBusy: busyDays[day]}
+			date := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+			daysInMonth[day-1] = Day{
+				Day:     day,
+				Weekday: weekdays[date.Weekday()], // Устанавливаем название дня недели на русском
+				IsBusy:  busyDays[day],
+			}
 		}
 		data.Months = append(data.Months, Month{
 			Name:  month.String(),
 			Year:  year,
 			Days:  daysInMonth,
-			Index: i, // Записываем индекс месяца
+			Index: i,
 		})
 	}
 
@@ -223,13 +239,18 @@ func CalendarHandler(w http.ResponseWriter, r *http.Request) {
 	daysCount := daysInMonthInYear(time.Month(monthIndex+1), year)
 	daysInMonth := make([]Day, daysCount)
 	for day := 1; day <= daysCount; day++ {
-		daysInMonth[day-1] = Day{Day: day, IsBusy: busyDays[day]}
+		date := time.Date(year, time.Month(monthIndex+1), day, 0, 0, 0, 0, time.UTC)
+		daysInMonth[day-1] = Day{
+			Day:     day,
+			Weekday: weekdays[date.Weekday()], // Устанавливаем название дня недели на русском
+			IsBusy:  busyDays[day],
+		}
 	}
 	data.CurrentMonth = Month{
 		Name:  time.Month(monthIndex + 1).String(),
 		Year:  year,
 		Days:  daysInMonth,
-		Index: monthIndex, // Записываем индекс выбранного месяца
+		Index: monthIndex,
 	}
 
 	// Выполнение шаблона
@@ -272,15 +293,16 @@ func isLeapYear(year int) bool {
 }
 
 type Day struct {
-	Day    int
-	IsBusy bool
+	Day     int
+	Weekday string // Новое поле для хранения дня недели
+	IsBusy  bool
 }
 
 type Month struct {
 	Name  string
 	Year  int
 	Days  []Day
-	Index int // Добавляем поле для индекса месяца
+	Index int
 }
 
 // OrderDetailsHandler обрабатывает запросы для отображения информации о заказе
@@ -320,13 +342,16 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Получаем информацию о заказе из базы данных
+	// Для отладки выводим передаваемые параметры
+	log.Printf("Полученные параметры: userID=%d, day=%d, month=%d, year=%d\n", userID, day, month, year)
+
+	// Получаем информацию о заказе из базы данных без добавления +1 к month
 	query := `SELECT n.name, a.starttime, a.endtime 
-              FROM appointments a 
-              JOIN nannies n ON a.nannyid = n.id 
-              WHERE a.userid = $1 AND EXTRACT(DAY FROM a.starttime) = $2 
-              AND EXTRACT(MONTH FROM a.starttime) = $3 
-              AND EXTRACT(YEAR FROM a.starttime) = $4`
+          FROM appointments a 
+          JOIN nannies n ON a.nannyid = n.id 
+          WHERE a.userid = $1 AND EXTRACT(DAY FROM a.starttime) = $2 
+          AND EXTRACT(MONTH FROM a.starttime) = $3 
+          AND EXTRACT(YEAR FROM a.starttime) = $4`
 	row := Db.QueryRow(query, userID, day, month+1, year)
 
 	var nannyName string
@@ -338,15 +363,18 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Подготовка данных для шаблона
+	// Отладочный вывод для проверки значений времени
+	log.Printf("Няня: %s, Начало: %s, Конец: %s\n", nannyName, startTime, endTime)
+
+	// Подготовка данных для шаблона с полным форматом даты
 	data := struct {
 		NannyName string
 		StartTime string
 		EndTime   string
 	}{
 		NannyName: nannyName,
-		StartTime: startTime.Format("15:04"),
-		EndTime:   endTime.Format("15:04"),
+		StartTime: startTime.Format("02/01/2006, 15:04"), // Полный формат для начала
+		EndTime:   endTime.Format("02/01/2006, 15:04"),   // Полный формат для конца
 	}
 
 	// Выполнение шаблона для отображения заказа

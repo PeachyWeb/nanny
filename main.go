@@ -39,6 +39,7 @@ func main() {
 	http.HandleFunc("/add_review", handlers.AddReviewHandler) // Обработчик для добавления отзыва
 
 	http.HandleFunc("/login/google", handlers.GoogleLoginHandler)
+	http.HandleFunc("/login/23", handlers.GoogleLoginHandler)
 	http.HandleFunc("/callback/google", handlers.GoogleCallbackHandler)
 
 	log.Println("Сервер запущен на порту :8080")

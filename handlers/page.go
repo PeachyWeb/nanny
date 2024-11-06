@@ -342,16 +342,13 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Для отладки выводим передаваемые параметры
-	log.Printf("Полученные параметры: userID=%d, day=%d, month=%d, year=%d\n", userID, day, month, year)
-
-	// Получаем информацию о заказе из базы данных без добавления +1 к month
+	// Получаем информацию о заказе из базы данных
 	query := `SELECT n.name, a.starttime, a.endtime 
-          FROM appointments a 
-          JOIN nannies n ON a.nannyid = n.id 
-          WHERE a.userid = $1 AND EXTRACT(DAY FROM a.starttime) = $2 
-          AND EXTRACT(MONTH FROM a.starttime) = $3 
-          AND EXTRACT(YEAR FROM a.starttime) = $4`
+              FROM appointments a 
+              JOIN nannies n ON a.nannyid = n.id 
+              WHERE a.userid = $1 AND EXTRACT(DAY FROM a.starttime) = $2 
+              AND EXTRACT(MONTH FROM a.starttime) = $3 
+              AND EXTRACT(YEAR FROM a.starttime) = $4`
 	row := Db.QueryRow(query, userID, day, month+1, year)
 
 	var nannyName string
@@ -363,18 +360,15 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Отладочный вывод для проверки значений времени
-	log.Printf("Няня: %s, Начало: %s, Конец: %s\n", nannyName, startTime, endTime)
-
-	// Подготовка данных для шаблона с полным форматом даты
+	// Подготовка данных для шаблона
 	data := struct {
 		NannyName string
 		StartTime string
 		EndTime   string
 	}{
 		NannyName: nannyName,
-		StartTime: startTime.Format("02/01/2006, 15:04"), // Полный формат для начала
-		EndTime:   endTime.Format("02/01/2006, 15:04"),   // Полный формат для конца
+		StartTime: startTime.Format("15:04"),
+		EndTime:   endTime.Format("15:04"),
 	}
 
 	// Выполнение шаблона для отображения заказа

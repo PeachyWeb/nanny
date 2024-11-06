@@ -9,8 +9,33 @@
     <style>
         /* Удаляем отступ сверху у тела */
         body {
-            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-        }
+    background-color: #f0f4f8;
+    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+    background-size: cover; /* Фон занимает всю доступную площадь */
+    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
+    background-repeat: no-repeat;
+    font-family: 'Roboto', sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.6s ease, transform 0.6s ease;
+    will-change: transform;
+    min-height: 100vh;
+
+    /* Добавление анимации */
+    animation: moveBackground 15s ease-in-out infinite;
+}
+
+@keyframes moveBackground {
+    0% {
+        background-position: center top; /* Начальная позиция фона */
+    }
+    50% {
+        background-position: center 80%; /* Перемещение фона на 80% от высоты */
+    }
+    100% {
+        background-position: center top; /* Возвращение в начальную позицию */
+    }
+}
+
 
         /* Контейнер для календаря, чтобы центрировать ячейки */
         .calendar-container {

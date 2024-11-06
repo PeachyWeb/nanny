@@ -48,6 +48,7 @@ func main() {
 	http.HandleFunc("/become_nanny_guide", handlers.GuideNanny)
 
 	http.HandleFunc("/login/google", handlers.GoogleLoginHandler)
+	http.HandleFunc("/login/googleh", handlers.GoogleLoginHandler)
 	http.HandleFunc("/callback/google", handlers.GoogleCallbackHandler)
 
 	log.Println("Сервер запущен на порту :8080")

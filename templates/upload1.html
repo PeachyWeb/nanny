@@ -9,12 +9,32 @@
     <style>
         /* Основные стили */
         body {
-            background-color: #f8f9fa;
-            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
+    background-color: #f0f4f8;
+    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+    background-size: cover; /* Фон занимает всю доступную площадь */
+    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
+    background-repeat: no-repeat;
+    font-family: 'Roboto', sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.6s ease, transform 0.6s ease;
+    will-change: transform;
+    min-height: 100vh;
+
+    /* Добавление анимации */
+    animation: moveBackground 15s ease-in-out infinite;
+}
+
+@keyframes moveBackground {
+    0% {
+        background-position: center top; /* Начальная позиция фона */
+    }
+    50% {
+        background-position: center 80%; /* Перемещение фона на 80% от высоты */
+    }
+    100% {
+        background-position: center top; /* Возвращение в начальную позицию */
+    }
+}
 
         .navbar {
             background-color: turquoise;
@@ -145,12 +165,13 @@
         </div>
     </nav>
 
+    <!-- Основной контент -->
     <div class="container py-5">
         <!-- Фильтры -->
-        <div class="row filter-section g-3 align-items-end">
-            <div class="col">
+        <div class="row filter-section">
+            <div class="col-md-3">
                 <label for="filterCity" class="form-label">Город</label>
-                <select id="filterCity" class="form-select shadow-sm rounded">
+                <select id="filterCity" class="form-select">
                     <option value="">Все города</option>
                     <option value="Москва">Москва</option>
                     <option value="Санкт-Петербург">Санкт-Петербург</option>
@@ -159,31 +180,22 @@
                     <option value="Нижний Новгород">Нижний Новгород</option>
                 </select>
             </div>
-    
-            <div class="col">
+            <div class="col-md-3">
                 <label for="filterExperience" class="form-label">Стаж (лет)</label>
-                <input type="number" id="filterExperience" class="form-control shadow-sm rounded" placeholder="Мин. стаж">
+                <input type="number" id="filterExperience" class="form-control" placeholder="Мин. стаж">
             </div>
-    
-            <div class="col">
+            <div class="col-md-3">
                 <label for="filterPrice" class="form-label">Цена (руб./час)</label>
-                <input type="number" id="filterPrice" class="form-control shadow-sm rounded" placeholder="Макс. цена">
+                <input type="number" id="filterPrice" class="form-control" placeholder="Макс. цена">
             </div>
-    
-            <div class="col">
+            <div class="col-md-3">
                 <label for="filterRating" class="form-label">Рейтинг</label>
-                <input type="number" id="filterRating" class="form-control shadow-sm rounded" step="0.1" placeholder="Мин. рейтинг">
+                <input type="number" id="filterRating" class="form-control" step="0.1" placeholder="Мин. рейтинг">
             </div>
-    
-            <div class="col">
-                <button id="applyFilters" class="btn btn-primary w-100 shadow-sm rounded">Применить фильтры</button>
+            <div class="col-md-3 d-flex align-items-end mt-2">
+                <button id="applyFilters" class="btn btn-primary w-100">Применить фильтры</button>
             </div>
         </div>
-
-    
-
-      
-    
 
         <!-- Карточки нянь -->
         <div class="row g-4 nanny-catalog-container" id="nannyCatalog">

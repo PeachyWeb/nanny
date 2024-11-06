@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,114 +8,205 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
+    background-color: #f0f4f8;
+    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+    background-size: cover; /* Фон занимает всю доступную площадь */
+    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
+    background-repeat: no-repeat;
+    font-family: 'Roboto', sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.6s ease, transform 0.6s ease;
+    will-change: transform;
+    min-height: 100vh;
+
+    /* Добавление анимации */
+    animation: moveBackground 15s ease-in-out infinite;
+}
+
+@keyframes moveBackground {
+    0% {
+        background-position: center top; /* Начальная позиция фона */
+    }
+    50% {
+        background-position: center 80%; /* Перемещение фона на 80% от высоты */
+    }
+    100% {
+        background-position: center top; /* Возвращение в начальную позицию */
+    }
+}
+
+        .navbar {
+            background-color: turquoise;
         }
 
         .navbar-brand {
             font-weight: bold;
+            color: rgb(0, 0, 109);
+            margin-left: 41px;
         }
 
-        .card-img-top {
-            height: 250px;
-            object-fit: cover;
+        .navbar-nav {
+            margin-left: 719px;
+            /* Сдвиньте меню вправо, измените по необходимости */
         }
 
-        .card {
-            transition: transform 0.2s;
+        .navbar-nav .nav-link {
+            color: rgb(0, 0, 109);
+            padding-left: 20px;
+            /* Добавьте отступ между пунктами меню */
         }
 
-        .card:hover {
-            transform: scale(1.05);
+        .navbar-nav .nav-link:hover {
+            color: #007bff;
         }
 
-        .filter-section {
-            background-color: white;
+        .profile-container {
+            max-width: 850px;
+            margin: 140px auto;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            background-color: white;
-            padding: 10px;
+
+        .section-container {
+            border: 1px solid #c6c6c6;
+            /* Черная обводка */
+            border-radius: 10px;
+            padding: 15px;
+            margin: 7px 5px;
+        }
+
+        h2 {
+            font-size: 1.15rem;
+            /* Уменьшен размер заголовка */
+            font-weight: bold;
+            /* Сделать заголовок жирным */
+            margin: 0;
+            /* Уменьшение отступов сверху и снизу */
+        }
+
+        /* Уменьшаем ширину полей ввода */
+        /* Стиль для полей формы и меток */
+        .form-group {
+            display: flex;
+            align-items: center;
+            /* Центрируем элементы по вертикали */
+            margin-bottom: 10px;
+            /* Добавляем немного отступа между строками */
+        }
+
+        .form-group label {
+            margin-right: 9px;
+            /* Отступ между меткой и полем ввода */
+            min-width: 30px;
+            /* Задаем минимальную ширину для меток, чтобы они не сжимались */
+            color: rgb(84, 84, 84);
+        }
+
+        .mb-3 label {
+            color: rgb(84, 84, 84); /* Устанавливаем серый цвет для меток времени */
+        }
+
+        .form-group input,
+        .form-group textarea {
+            flex: 1;
+            /* Поля займут оставшееся пространство */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            flex-grow: 1;
+            /* Поля будут занимать оставшееся пространство */
+        }
+
+        .btnn {
+            color: black; /* Цвет текста кнопки */
+            border: 2px solid transparent; /* Прозрачная обводка */
+            border-radius: 12px; /* Закругление углов */
+            padding: 5px 10px; /* Отступы внутри кнопки (по вертикали и горизонтали) */
+            background-color: rgb(201, 201, 181); /* Прозрачный фон */
+            cursor: pointer; /* Указатель курсора при наведении */
+        }
+
+        .btnn:hover {
+            background-color: rgb(181, 181, 163); /* Цвет обводки при наведении (если требуется) */
+            color: white;
         }
 
     </style>
 </head>
+
 <body>
 
-     <!-- Навигационная панель -->
-     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/main">Главная</a>
-                    </li>
+                <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="/catalog">Каталог нянь</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/calendar">Календарь</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Профиль</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/order-history">История заказов</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <h2>Редактировать профиль няни</h2>
-    <form action="/update_nanny" method="POST">
-        <input type="hidden" name="id" value="{{ .UserID }}">
-        <div>
-            <label for="name">Имя:</label>
-            <input type="text" id="name" name="name" value="{{ .Nanny.Name }}" required>
-        </div>
-        <div>
-            <label for="description">Описание:</label>
-            <textarea id="description" name="description" required>{{ .Nanny.Description }}</textarea>
-        </div>
-        <div>
-            <label for="price">Цена:</label>
-            <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required>
-        </div>
-        <div>
-            <label for="photo_url">URL фото:</label>
-            <input type="text" id="photo_url" name="photo_url" value="{{ .Nanny.PhotoURL }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-    </form>
+    <!-- Основной контейнер -->
+    <div class="profile-container">
+        <h2>Редактировать данные</h2>
+        <div class="section-container">
+            <form action="/update_nanny" method="POST">
+                <input type="hidden" name="id" value="{{ .Nanny.ID }}">
 
-    <h2 class="mt-4">Оформить найм няни</h2>
-    <form action="/hire_nanny" method="POST" class="mb-4">
-        <input type="hidden" name="user_id" value="{{ .UserID }}">
-        <input type="hidden" name="nanny_id" value="{{ .UserID }}">
+                <div class="form-group">
+                    <label for="name">Имя:</label>
+                    <input type="text" id="name" name="name" value="{{ .Nanny.Name }}" required class="form-control">
+                </div>
 
-        <div class="mb-3">
-            <label for="start_time" class="form-label">Время начала:</label>
-            <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+                <div class="form-group">
+                    <label for="description">Описание:</label>
+                    <textarea id="description" name="description" required class="form-control">{{ .Nanny.Description }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Цена в рублях:</label>
+                    <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="city">Город:</label>
+                    <input type="text" id="city" name="city" value="{{ .Nanny.City }}" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="photo_url">URL фотографии:</label>
+                    <input type="text" id="photo_url" name="photo_url" value="{{ .Nanny.PhotoURL }}" class="form-control">
+                </div>
+
+                <!-- Кнопка "Сохранить изменения" -->
+                <div class="text-center mt-3">
+                    <button type="submit" class="btnn">Сохранить изменения</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="mb-3">
-            <label for="end_time" class="form-label">Время окончания:</label>
-            <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
-        </div>
-
-        <button type="submit" class="btn btn-success">Нанять няню</button>
-    </form>
-
-    <footer class="bg-light py-3 text-center mt-auto">
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Nanny Market. Все права защищены.</p>
-        </div>
-    </footer>
 </body>
+
 </html>

@@ -9,32 +9,31 @@
     <style>
         /* Основные стили */
         body {
-    background-color: #f0f4f8;
-    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-    background-size: cover; /* Фон занимает всю доступную площадь */
-    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
-    background-repeat: no-repeat;
-    font-family: 'Roboto', sans-serif;
-    overflow-x: hidden;
-    transition: background-color 0.6s ease, transform 0.6s ease;
-    will-change: transform;
-    min-height: 100vh;
+        background-color: #f0f4f8;
+        background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+        background-size: cover;
+        background-position: center top;
+        background-repeat: repeat;
+        background-attachment: fixed;
+        font-family: 'Roboto', sans-serif;
+        overflow-x: hidden;
+        transition: background-color 0.6s ease, transform 0.6s ease; /* Updated for smoothness */
+        will-change: transform;
+        min-height: 100vh;
+        animation: moveBackground 15s ease-in-out infinite; /* Smoother animation timing */
+    }
 
-    /* Добавление анимации */
-    animation: moveBackground 15s ease-in-out infinite;
-}
-
-@keyframes moveBackground {
-    0% {
-        background-position: center top; /* Начальная позиция фона */
+    @keyframes moveBackground {
+        0% {
+            background-position: center top;
+        }
+        50% {
+            background-position: center 80%;
+        }
+        100% {
+            background-position: center top;
+        }
     }
-    50% {
-        background-position: center 80%; /* Перемещение фона на 80% от высоты */
-    }
-    100% {
-        background-position: center top; /* Возвращение в начальную позицию */
-    }
-}
 
         .navbar {
             background-color: turquoise;
@@ -53,7 +52,7 @@
             color: #007bff;
         }
 
-        /* Фильтр */
+        /* Стили для секции фильтров */
         .filter-section {
             background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
@@ -65,6 +64,12 @@
         .filter-section label {
             font-weight: 600;
             color: #333;
+        }
+
+        .filter-section .form-select,
+        .filter-section .form-control,
+        #applyFilters {
+            width: 100%;
         }
 
         #applyFilters {
@@ -96,8 +101,6 @@
         .card-img-top {
             height: 200px;
             object-fit: cover;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
         }
 
         .card-body {
@@ -112,26 +115,9 @@
             margin-bottom: 10px;
         }
 
-        .card-text {
+        .card-text, .text-muted, .card p {
             font-size: 0.9rem;
             color: #555;
-            margin-bottom: 15px;
-        }
-
-        .card p {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .text-muted {
-            font-weight: bold;
-            color: #555;
-        }
-
-        /* Выравнивание каталога под фильтры */
-        .nanny-catalog-container {
-            margin-left: 0;
         }
     </style>
 </head>
@@ -165,13 +151,12 @@
         </div>
     </nav>
 
-    <!-- Основной контент -->
     <div class="container py-5">
         <!-- Фильтры -->
-        <div class="row filter-section">
-            <div class="col-md-3">
+        <div class="row filter-section g-3 align-items-end">
+            <div class="col">
                 <label for="filterCity" class="form-label">Город</label>
-                <select id="filterCity" class="form-select">
+                <select id="filterCity" class="form-select shadow-sm rounded">
                     <option value="">Все города</option>
                     <option value="Москва">Москва</option>
                     <option value="Санкт-Петербург">Санкт-Петербург</option>
@@ -180,22 +165,31 @@
                     <option value="Нижний Новгород">Нижний Новгород</option>
                 </select>
             </div>
-            <div class="col-md-3">
+    
+            <div class="col">
                 <label for="filterExperience" class="form-label">Стаж (лет)</label>
-                <input type="number" id="filterExperience" class="form-control" placeholder="Мин. стаж">
+                <input type="number" id="filterExperience" class="form-control shadow-sm rounded" placeholder="Мин. стаж"  min="0">
             </div>
-            <div class="col-md-3">
+    
+            <div class="col">
                 <label for="filterPrice" class="form-label">Цена (руб./час)</label>
-                <input type="number" id="filterPrice" class="form-control" placeholder="Макс. цена">
+                <input type="number" id="filterPrice" class="form-control shadow-sm rounded" placeholder="Макс. цена" min="0">
             </div>
-            <div class="col-md-3">
+    
+            <div class="col">
                 <label for="filterRating" class="form-label">Рейтинг</label>
-                <input type="number" id="filterRating" class="form-control" step="0.1" placeholder="Мин. рейтинг">
+                <input type="number" id="filterRating" class="form-control shadow-sm rounded" step="0.1" placeholder="Мин. рейтинг" min="0.0">
             </div>
-            <div class="col-md-3 d-flex align-items-end mt-2">
-                <button id="applyFilters" class="btn btn-primary w-100">Применить фильтры</button>
+    
+            <div class="col">
+                <button id="applyFilters" class="btn btn-primary w-100 shadow-sm rounded">Применить фильтры</button>
             </div>
         </div>
+
+    
+
+      
+    
 
         <!-- Карточки нянь -->
         <div class="row g-4 nanny-catalog-container" id="nannyCatalog">

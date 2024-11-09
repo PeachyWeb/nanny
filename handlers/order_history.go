@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Основной обработчик для страницы истории заказов с фильтрацией и сортировкой
 func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	// Получаем сессию
 	session, err := store.Get(r, "session-name")
@@ -30,7 +30,6 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	nannyName := r.URL.Query().Get("nannyName")
 	dateFrom := r.URL.Query().Get("dateFrom")
 	dateTo := r.URL.Query().Get("dateTo")
-	reviewStatus := r.URL.Query().Get("reviewStatus")
 	sortBy := r.URL.Query().Get("sortBy") // Параметр для сортировки
 
 	// Построение SQL-запроса с фильтрами
@@ -44,26 +43,24 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
         LEFT JOIN reviews r ON r.nanny_id = n.id AND r.user_id = $1
         WHERE a.userid = $1
     `
-	var args []interface{}
-	args = append(args, userID)
+	args := []interface{}{userID}
+	argIndex := 2 // Начинаем с индекса 2, так как userID уже занят $1
 
 	// Добавление условий в зависимости от параметров фильтрации
 	if nannyName != "" {
-		query += " AND n.name ILIKE $2"
+		query += " AND n.name ILIKE $" + fmt.Sprint(argIndex)
 		args = append(args, "%"+nannyName+"%")
+		argIndex++
 	}
 	if dateFrom != "" {
-		query += " AND a.starttime >= $3"
+		query += " AND a.starttime >= $" + fmt.Sprint(argIndex)
 		args = append(args, dateFrom)
+		argIndex++
 	}
 	if dateTo != "" {
-		query += " AND a.starttime <= $4"
+		query += " AND a.starttime <= $" + fmt.Sprint(argIndex)
 		args = append(args, dateTo)
-	}
-	if reviewStatus == "withReview" {
-		query += " AND r.order_id IS NOT NULL"
-	} else if reviewStatus == "withoutReview" {
-		query += " AND r.order_id IS NULL"
+		argIndex++
 	}
 
 	// Добавляем сортировку по запросу пользователя
@@ -143,6 +140,67 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Ошибка при рендеринге шаблона:", err)
 		http.Error(w, "Ошибка при рендеринге шаблона", http.StatusInternalServerError)
 	}
+}
+
+func CancelOrderHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		log.Println("Ошибка при получении сессии:", err)
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	userID, ok := session.Values["userID"].(int)
+	if !ok || userID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	// Получение параметров даты и orderID через FormValue для POST-запроса
+	dayStr := r.FormValue("day")
+	monthStr := r.FormValue("month")
+	yearStr := r.FormValue("year")
+	orderIDStr := r.FormValue("orderID")
+
+	// Преобразование строковых параметров в целочисленные
+	day, err := strconv.Atoi(dayStr)
+	if err != nil {
+		http.Error(w, "Неверный день", http.StatusBadRequest)
+		return
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil {
+		http.Error(w, "Неверный месяц", http.StatusBadRequest)
+		return
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		http.Error(w, "Неверный год", http.StatusBadRequest)
+		return
+	}
+
+	orderID, err := strconv.Atoi(orderIDStr)
+	if err != nil {
+		http.Error(w, "Неверный ID заказа", http.StatusBadRequest)
+		return
+	}
+
+	// Логирование полученных параметров для отладки
+	log.Printf("Полученные параметры: userID=%d, day=%d, month=%d, year=%d, orderID=%d\n", userID, day, month, year, orderID)
+
+	// Удаление заказа из базы данных
+	query := `DELETE FROM appointments WHERE idappointment = $1 AND userid = $2`
+	_, err = Db.Exec(query, orderID, userID)
+	if err != nil {
+		log.Println("Ошибка при отмене заказа:", err)
+		http.Error(w, "Ошибка при отмене заказа", http.StatusInternalServerError)
+		return
+	}
+
+	// Перенаправление на календарь после успешного удаления
+	http.Redirect(w, r, "/calendar", http.StatusSeeOther)
 }
 
 // Обработчик для добавления отзыва

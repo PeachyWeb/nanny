@@ -13,13 +13,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Структура пользователя
-
-/*type Price struct {
-	Valid   bool
-	Float64 float64
-}*/
-
 type Review struct {
 	ReviewID  int
 	UserID    int
@@ -33,6 +26,7 @@ type Appointment struct {
 	NannyID   int
 	StartTime time.Time
 	EndTime   time.Time
+	UserID    int // Добавьте это поле, если оно требуется для отслеживания пользователя
 }
 
 type User struct {
@@ -47,6 +41,11 @@ type User struct {
 	Phone      sql.NullString // Может быть NULL
 	UserName   string
 	Age        sql.NullInt64 // Может быть NULL
+}
+type Day struct {
+	Day     int    // Число месяца
+	Weekday string // День недели на русском
+	IsBusy  bool   // Занято ли время (например, если встреча назначена на этот день)
 }
 
 type NannyDetailPage struct {
@@ -63,33 +62,34 @@ type OrderHistoryPage struct {
 	Orders []Order
 }
 
+type Order struct {
+	ID          int
+	StartTime   time.Time
+	EndTime     time.Time
+	UserID      int
+	NannyID     int
+	NannyName   string
+	Price       float64
+	ReviewLeft  bool
+	Date        time.Time
+	Total       float64 // Или другой тип для цены
+	Review      *Review // Если используется для хранения отзыва
+	ClientName  string  // Имя клиента
+	ClientPhone string  // Телефон клиента
+}
+
 /*
 	type Order struct {
 		ID         int
 		StartTime  time.Time
 		EndTime    time.Time
-		UserID     int
+		Price      sql.NullFloat64 // Используйте sql.NullFloat64 для обработки NULL значений
 		NannyID    int
 		NannyName  string
-		Price      float64
+		Review     *Review // Измените на указатель, чтобы избежать ошибки, если отзыва нет
 		ReviewLeft bool
-		Date       time.Time
-		Total      float64 // Или другой тип для цены
-		Review     *Review // Если используется для хранения отзыва
 	}
 */
-
-type Order struct {
-	ID         int
-	StartTime  time.Time
-	EndTime    time.Time
-	Price      sql.NullFloat64 // Используйте sql.NullFloat64 для обработки NULL значений
-	NannyID    int
-	NannyName  string
-	Review     *Review // Измените на указатель, чтобы избежать ошибки, если отзыва нет
-	ReviewLeft bool
-}
-
 type PageData struct {
 	UserID        int
 	UserName      string

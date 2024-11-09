@@ -21,7 +21,7 @@ var (
 	store             = sessions.NewCookieStore([]byte("super-secret-key"))
 )
 
-// Функция для обработки главной страницы и аутентификации
+// / Функция для обработки главной страницы и аутентификации
 func Home(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		TmplRegister.Execute(w, nil)
@@ -31,8 +31,9 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 		id := AuthenticateUser(r.Context(), login, password)
 		if id == -1 {
-			log.Println("Ошибка аутентификации: неверный пароль")
-			http.ServeFile(w, r, "templates/errorModal.html")
+			// Отправляем ответ об ошибке вместо показа errorModal.html
+			http.Error(w, "Неверный пароль", http.StatusUnauthorized)
+			return
 		} else if id > 0 {
 			log.Printf("Успешная аутентификация для пользователя с ID: %d", id)
 			// Создаем и сохраняем сессию

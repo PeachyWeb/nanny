@@ -9,50 +9,50 @@
     <style>
         /* Удаляем отступ сверху у тела */
         body {
-    background-color: #f0f4f8;
-    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-    background-size: cover; /* Фон занимает всю доступную площадь */
-    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
-    background-repeat: no-repeat;
-    font-family: 'Roboto', sans-serif;
-    overflow-x: hidden;
-    transition: background-color 0.6s ease, transform 0.6s ease;
-    will-change: transform;
-    min-height: 100vh;
+            background-color: #f0f4f8;
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: repeat;
+            background-attachment: fixed;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.6s ease, transform 0.6s ease; /* Updated for smoothness */
+            will-change: transform;
+            min-height: 100vh;
+            animation: moveBackground 15s ease-in-out infinite; /* Smoother animation timing */
+        }
 
-    /* Добавление анимации */
-    animation: moveBackground 15s ease-in-out infinite;
-}
+        @keyframes moveBackground {
+            0% {
+                background-position: center top;
+            }
 
-@keyframes moveBackground {
-    0% {
-        background-position: center top; /* Начальная позиция фона */
-    }
-    50% {
-        background-position: center 80%; /* Перемещение фона на 80% от высоты */
-    }
-    100% {
-        background-position: center top; /* Возвращение в начальную позицию */
-    }
-}
+            50% {
+                background-position: center 80%;
+            }
 
+            100% {
+                background-position: center top;
+            }
+        }
 
         /* Контейнер для календаря, чтобы центрировать ячейки */
         .calendar-container {
-    display: flex;
-    justify-content: flex-start; /* Выравнивание контейнера влево */
-    margin-top: 20px;
-    padding: 0 20px;
-    max-width: 700px;
-    margin-left: 227px; /* Добавляем отступ слева */
-}
-
+            display: flex;
+            justify-content: center; /* Центрирование контейнера */
+            align-items: center;
+            margin-top: 20px;
+            padding: 0 20px;
+            max-width: 100%; /* Ограничиваем ширину по содержимому */
+        }
 
         /* Стиль для календаря */
         .calendar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 10px 10px; /* Отступы между ячейками */
+            gap: 10px; /* Отступы между ячейками */
+            justify-content: center; /* Центрирование сетки */
         }
 
         /* Стиль для ячеек дня */
@@ -166,7 +166,6 @@
 </head>
 
 <body>
-
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
@@ -220,6 +219,8 @@
         </div>
     </form>
 
+    
+
     <!-- Контейнер для центрирования календаря -->
     <div class="calendar-container">
         <div class="calendar">
@@ -228,7 +229,7 @@
                 <strong class="day-number">{{ .Day }}</strong>
                 <span class="weekday">{{ .Weekday }}</span>
                 {{ if .IsBusy }}
-                <div class="button-container"> <!-- Новый контейнер для кнопки -->
+                <div class="button-container">
                     <a href="/order-details?day={{ .Day }}&month={{ $.SelectedMonthIndex }}&year={{ $.SelectedYear }}" class="btn btn-info order-button">Посмотреть заказ</a>
                 </div>
                 {{ end }}
@@ -236,7 +237,6 @@
             {{ end }}
         </div>
     </div>
-
 </body>
 
 </html>

@@ -2,10 +2,15 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"text/template"
+	"time"
 )
 
 // Получаем рейтинги для конкретной няни
@@ -294,16 +299,22 @@ func NannyPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdateNannyHandler обновляет профиль няни.
 func UpdateNannyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+		// Обработка формы с файлами
+		err := r.ParseMultipartForm(10 << 20) // 10MB лимит на размер файла
+		if err != nil {
+			http.Error(w, "Ошибка при обработке формы", http.StatusBadRequest)
+			return
+		}
+
 		// Получение данных из формы
 		nannyID := r.FormValue("id")
 		name := r.FormValue("name")
 		description := r.FormValue("description")
 		priceStr := r.FormValue("price")
 		city := r.FormValue("city")
-		photoURL := r.FormValue("photo_url")
+		photoURL := r.FormValue("photo_url") // Старая ссылка на фото, если она есть
 
 		// Преобразование цены из строки в float64
 		price, err := strconv.ParseFloat(priceStr, 64)
@@ -312,15 +323,69 @@ func UpdateNannyHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Обработка загруженного файла
+		var newPhotoURL string
+		file, fileHeader, err := r.FormFile("photo")
+		if err != nil && err.Error() != "http: no such file" { // Проверяем, есть ли файл
+			http.Error(w, "Ошибка при загрузке файла", http.StatusInternalServerError)
+			return
+		}
+
+		// Если файл был загружен
+		if file != nil {
+			defer file.Close()
+
+			// Папка для сохранения фотографий
+			const uploadDir = "./uploads"
+			if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+				err := os.MkdirAll(uploadDir, os.ModePerm)
+				if err != nil {
+					http.Error(w, "Ошибка создания папки для фото", http.StatusInternalServerError)
+					return
+				}
+			}
+
+			// Генерация уникального имени файла
+			ext := filepath.Ext(fileHeader.Filename)                // Расширение файла
+			fileName := fmt.Sprintf("%d%s", time.Now().Unix(), ext) // Уникальное имя файла
+			filePath := filepath.Join(uploadDir, fileName)
+
+			// Создаем файл для сохранения
+			outFile, err := os.Create(filePath)
+			if err != nil {
+				http.Error(w, "Ошибка сохранения файла", http.StatusInternalServerError)
+				return
+			}
+			defer outFile.Close()
+
+			// Копируем содержимое файла
+			_, err = io.Copy(outFile, file)
+			if err != nil {
+				http.Error(w, "Ошибка при копировании файла", http.StatusInternalServerError)
+				return
+			}
+
+			// Обновляем переменную для фото URL
+			newPhotoURL = "/uploads/" + fileName
+		} else {
+			// Если файл не был загружен, оставляем прежний URL или пустую строку
+			if photoURL != "" {
+				newPhotoURL = photoURL
+			} else {
+				// Если фото не было предоставлено, сохраняем пустое значение
+				newPhotoURL = ""
+			}
+		}
+
 		// Обновление данных о няне в базе данных
 		query := "UPDATE nannies SET name = $1, description = $2, price = $3, photo_url = $4, city = $5 WHERE id = $6"
-		_, err = Db.Exec(query, name, description, price, photoURL, city, nannyID)
+		_, err = Db.Exec(query, name, description, price, newPhotoURL, city, nannyID)
 		if err != nil {
 			http.Error(w, "Ошибка при обновлении профиля няни", http.StatusInternalServerError)
 			return
 		}
 
-		// Перенаправление обратно на страницу с каталогом или панелью
+		// Перенаправление на страницу редактирования профиля или на главную
 		http.Redirect(w, r, "/edit_nanny", http.StatusFound)
 	} else {
 		http.Error(w, "Неверный метод запроса", http.StatusMethodNotAllowed)

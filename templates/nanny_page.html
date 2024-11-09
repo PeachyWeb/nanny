@@ -9,32 +9,31 @@
     <style>
         /* Основные стили страницы */
         body {
-    background-color: #f0f4f8;
-    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-    background-size: cover; /* Фон занимает всю доступную площадь */
-    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
-    background-repeat: no-repeat;
-    font-family: 'Roboto', sans-serif;
-    overflow-x: hidden;
-    transition: background-color 0.6s ease, transform 0.6s ease;
-    will-change: transform;
-    min-height: 100vh;
+        background-color: #f0f4f8;
+        background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+        background-size: cover;
+        background-position: center top;
+        background-repeat: repeat;
+        background-attachment: fixed;
+        font-family: 'Roboto', sans-serif;
+        overflow-x: hidden;
+        transition: background-color 0.6s ease, transform 0.6s ease; /* Updated for smoothness */
+        will-change: transform;
+        min-height: 100vh;
+        animation: moveBackground 15s ease-in-out infinite; /* Smoother animation timing */
+    }
 
-    /* Добавление анимации */
-    animation: moveBackground 15s ease-in-out infinite;
-}
-
-@keyframes moveBackground {
-    0% {
-        background-position: center top; /* Начальная позиция фона */
+    @keyframes moveBackground {
+        0% {
+            background-position: center top;
+        }
+        50% {
+            background-position: center 80%;
+        }
+        100% {
+            background-position: center top;
+        }
     }
-    50% {
-        background-position: center 80%; /* Перемещение фона на 80% от высоты */
-    }
-    100% {
-        background-position: center top; /* Возвращение в начальную позицию */
-    }
-}
 
         /* Стили для навигационной панели */
         .navbar {

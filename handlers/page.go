@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -242,7 +243,7 @@ func CalendarHandler(w http.ResponseWriter, r *http.Request) {
 		date := time.Date(year, time.Month(monthIndex+1), day, 0, 0, 0, 0, time.UTC)
 		daysInMonth[day-1] = Day{
 			Day:     day,
-			Weekday: weekdays[date.Weekday()], // Устанавливаем название дня недели на русском
+			Weekday: weekdays[date.Weekday()],
 			IsBusy:  busyDays[day],
 		}
 	}
@@ -253,12 +254,93 @@ func CalendarHandler(w http.ResponseWriter, r *http.Request) {
 		Index: monthIndex,
 	}
 
-	// Выполнение шаблона
-	err = TmplCalendar.Execute(w, data)
+	// Рендерим шаблон
+	tmpl := ParseTemplate("templates/calendar.html")
+	err = tmpl.Execute(w, data)
 	if err != nil {
-		log.Println("Ошибка при выполнении шаблона:", err)
-		http.Error(w, "Ошибка выполнения шаблона", http.StatusInternalServerError)
+		log.Println("Ошибка выполнения шаблона:", err)
+		http.Error(w, "Ошибка при генерации календаря", http.StatusInternalServerError)
 	}
+}
+
+// Дополнительные функции и типы
+
+type Month struct {
+	Name  string
+	Year  int
+	Days  []Day
+	Index int
+}
+
+// Day представляет структуру для дня с назначениями
+
+// GetUserInfoByID возвращает информацию о клиенте по его ID
+func GetUserInfoByID(userID int) (UserInfo, error) {
+	var userInfo UserInfo
+	query := `SELECT name, phone FROM users WHERE id = $1`
+	err := Db.QueryRow(query, userID).Scan(&userInfo.Name, &userInfo.Phone)
+	if err != nil {
+		return UserInfo{}, err
+	}
+	return userInfo, nil
+}
+
+// UserInfo содержит данные о клиенте
+type UserInfo struct {
+	Name  string
+	Phone string
+}
+
+// Функция для генерации списка месяцев
+func generateMonths() []Month {
+	months := []Month{}
+	for i := 0; i < 12; i++ {
+		month := time.Month(i + 1)
+		months = append(months, Month{
+			Name:  month.String(),
+			Index: i,
+		})
+	}
+	return months
+}
+
+// CheckIfUserIsNanny проверяет, является ли пользователь няней
+func CheckIfUserIsNanny(userID int) (bool, error) {
+	var isNanny bool
+	// Проверяем наличие записи о няне в таблице nannies по user_id
+	query := `SELECT 1 FROM nannies WHERE user_id = $1 LIMIT 1`
+	err := Db.QueryRow(query, userID).Scan(&isNanny)
+	if err != nil {
+		// Если запись не найдена, то возвращаем ошибку
+		if err == sql.ErrNoRows {
+			// Пользователь не является няней
+			return false, nil
+		}
+		// Ошибка при запросе к базе данных
+		log.Println("Ошибка при проверке роли пользователя:", err)
+		return false, err
+	}
+	// Если запись найдена, значит пользователь является няней
+	return true, nil
+}
+
+// Функция для получения выбранного месяца и года из параметров запроса
+func getSelectedMonthYear(r *http.Request) (int, int) {
+	monthIndexStr := r.URL.Query().Get("month")
+	yearStr := r.URL.Query().Get("year")
+
+	// Парсим выбранный месяц
+	monthIndex, err := strconv.Atoi(monthIndexStr)
+	if err != nil || monthIndex < 0 || monthIndex > 11 {
+		monthIndex = int(time.Now().Month()) - 1 // Текущий месяц по умолчанию
+	}
+
+	// Парсим выбранный год
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year < 2000 || year > 2100 {
+		year = time.Now().Year() // Текущий год по умолчанию
+	}
+	return monthIndex, year
 }
 
 // Функция для генерации списка годов
@@ -292,20 +374,6 @@ func isLeapYear(year int) bool {
 	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
 }
 
-type Day struct {
-	Day     int
-	Weekday string // Новое поле для хранения дня недели
-	IsBusy  bool
-}
-
-type Month struct {
-	Name  string
-	Year  int
-	Days  []Day
-	Index int
-}
-
-// OrderDetailsHandler обрабатывает запросы для отображения информации о заказе
 func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-name")
 	if err != nil {
@@ -345,36 +413,50 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	// Для отладки выводим передаваемые параметры
 	log.Printf("Полученные параметры: userID=%d, day=%d, month=%d, year=%d\n", userID, day, month, year)
 
-	// Получаем информацию о заказе из базы данных без добавления +1 к month
-	query := `SELECT n.name, a.starttime, a.endtime 
-          FROM appointments a 
-          JOIN nannies n ON a.nannyid = n.id 
-          WHERE a.userid = $1 AND EXTRACT(DAY FROM a.starttime) = $2 
-          AND EXTRACT(MONTH FROM a.starttime) = $3 
-          AND EXTRACT(YEAR FROM a.starttime) = $4`
+	// SQL-запрос с выводом отладочного сообщения
+	query := `SELECT a.idappointment, n.name, a.starttime, a.endtime 
+	          FROM appointments a 
+	          JOIN nannies n ON a.nannyid = n.id 
+	          WHERE a.userid = $1 
+	            AND EXTRACT(DAY FROM a.starttime) = $2 
+	            AND EXTRACT(MONTH FROM a.starttime) = $3 
+	            AND EXTRACT(YEAR FROM a.starttime) = $4`
+
+	log.Printf("Выполняем SQL-запрос: %s с параметрами userID=%d, day=%d, month=%d, year=%d", query, userID, day, month+1, year)
+
 	row := Db.QueryRow(query, userID, day, month+1, year)
 
+	var orderID int
 	var nannyName string
 	var startTime, endTime time.Time
-	err = row.Scan(&nannyName, &startTime, &endTime)
+	err = row.Scan(&orderID, &nannyName, &startTime, &endTime)
 	if err != nil {
-		log.Println("Ошибка при получении информации о заказе:", err)
+		// Выводим сообщение об ошибке и SQL-параметры для отладки
+		log.Printf("Ошибка при получении информации о заказе (возможно, данные не найдены): %v. Параметры запроса: userID=%d, day=%d, month=%d, year=%d", err, userID, day, month+1, year)
 		http.Error(w, "Заказ не найден", http.StatusNotFound)
 		return
 	}
 
 	// Отладочный вывод для проверки значений времени
-	log.Printf("Няня: %s, Начало: %s, Конец: %s\n", nannyName, startTime, endTime)
+	log.Printf("Заказ ID: %d, Няня: %s, Начало: %s, Конец: %s\n", orderID, nannyName, startTime, endTime)
 
 	// Подготовка данных для шаблона с полным форматом даты
 	data := struct {
+		OrderID   int
 		NannyName string
 		StartTime string
 		EndTime   string
+		Day       int
+		Month     int
+		Year      int
 	}{
+		OrderID:   orderID,
 		NannyName: nannyName,
-		StartTime: startTime.Format("02/01/2006, 15:04"), // Полный формат для начала
-		EndTime:   endTime.Format("02/01/2006, 15:04"),   // Полный формат для конца
+		StartTime: startTime.Format("02/01/2006, 15:04"),
+		EndTime:   endTime.Format("02/01/2006, 15:04"),
+		Day:       day,
+		Month:     month,
+		Year:      year,
 	}
 
 	// Выполнение шаблона для отображения заказа

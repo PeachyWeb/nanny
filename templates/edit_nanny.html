@@ -8,32 +8,31 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
         body {
-    background-color: #f0f4f8;
-    background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-    background-size: cover; /* Фон занимает всю доступную площадь */
-    background-position: center top; /* Начальная позиция фона (центр по горизонтали, верх по вертикали) */
-    background-repeat: no-repeat;
-    font-family: 'Roboto', sans-serif;
-    overflow-x: hidden;
-    transition: background-color 0.6s ease, transform 0.6s ease;
-    will-change: transform;
-    min-height: 100vh;
+        background-color: #f0f4f8;
+        background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+        background-size: cover;
+        background-position: center top;
+        background-repeat: repeat;
+        background-attachment: fixed;
+        font-family: 'Roboto', sans-serif;
+        overflow-x: hidden;
+        transition: background-color 0.6s ease, transform 0.6s ease; /* Updated for smoothness */
+        will-change: transform;
+        min-height: 100vh;
+        animation: moveBackground 15s ease-in-out infinite; /* Smoother animation timing */
+    }
 
-    /* Добавление анимации */
-    animation: moveBackground 15s ease-in-out infinite;
-}
-
-@keyframes moveBackground {
-    0% {
-        background-position: center top; /* Начальная позиция фона */
+    @keyframes moveBackground {
+        0% {
+            background-position: center top;
+        }
+        50% {
+            background-position: center 80%;
+        }
+        100% {
+            background-position: center top;
+        }
     }
-    50% {
-        background-position: center 80%; /* Перемещение фона на 80% от высоты */
-    }
-    100% {
-        background-position: center top; /* Возвращение в начальную позицию */
-    }
-}
 
         .navbar {
             background-color: turquoise;
@@ -42,18 +41,10 @@
         .navbar-brand {
             font-weight: bold;
             color: rgb(0, 0, 109);
-            margin-left: 41px;
-        }
-
-        .navbar-nav {
-            margin-left: 719px;
-            /* Сдвиньте меню вправо, измените по необходимости */
         }
 
         .navbar-nav .nav-link {
             color: rgb(0, 0, 109);
-            padding-left: 20px;
-            /* Добавьте отступ между пунктами меню */
         }
 
         .navbar-nav .nav-link:hover {
@@ -142,14 +133,14 @@
 
     <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
+        <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="/catalog">Каталог нянь</a>
                     </li>
@@ -171,39 +162,41 @@
     <div class="profile-container">
         <h2>Редактировать данные</h2>
         <div class="section-container">
-            <form action="/update_nanny" method="POST">
+            <form action="/update_nanny" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" value="{{ .Nanny.ID }}">
-
+            
                 <div class="form-group">
                     <label for="name">Имя:</label>
                     <input type="text" id="name" name="name" value="{{ .Nanny.Name }}" required class="form-control">
                 </div>
-
+            
                 <div class="form-group">
                     <label for="description">Описание:</label>
                     <textarea id="description" name="description" required class="form-control">{{ .Nanny.Description }}</textarea>
                 </div>
-
+            
                 <div class="form-group">
                     <label for="price">Цена в рублях:</label>
                     <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required class="form-control">
                 </div>
-
+            
                 <div class="form-group">
                     <label for="city">Город:</label>
                     <input type="text" id="city" name="city" value="{{ .Nanny.City }}" class="form-control">
                 </div>
-
+            
+                <!-- Поле для загрузки фотографии -->
                 <div class="form-group">
-                    <label for="photo_url">URL фотографии:</label>
-                    <input type="text" id="photo_url" name="photo_url" value="{{ .Nanny.PhotoURL }}" class="form-control">
+                    <label for="photo">Загрузить фотографию:</label>
+                    <input type="file" id="photo" name="photo" class="form-control">
                 </div>
-
+            
                 <!-- Кнопка "Сохранить изменения" -->
                 <div class="text-center mt-3">
                     <button type="submit" class="btnn">Сохранить изменения</button>
                 </div>
             </form>
+            
         </div>
     </div>
 

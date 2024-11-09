@@ -35,6 +35,12 @@ func main() {
 	http.HandleFunc("/update_user", handlers.UpdateUserHandler)
 	http.HandleFunc("/update_nanny", handlers.UpdateNannyHandler) // Обработчик для обновления профиля
 
+	http.HandleFunc("/cancel-order", handlers.CancelOrderHandler) // удаление заказа
+
+	//загрузка файлов
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
 	// Маршруты
 	http.HandleFunc("/register", handlers.RegisterHandler) // Обработчик для регистрации
 	http.HandleFunc("/catalog", handlers.CatalogPage)      // Обработчик для каталога нянь

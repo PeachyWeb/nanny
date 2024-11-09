@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        .order-card { border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin-bottom: 15px; background-color: #f8f9fa; }
+        .order-card h4 { color: #007bff; }
+        .order-status { font-weight: bold; }
+        .btn-view-details { background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 15px; text-decoration: none; }
+        .btn-view-details:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg" style="background-color: turquoise;">
+        <div class="container">
+            <a class="navbar-brand" href="/main">Nanny Market</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/catalog">Каталог нянь</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/calendar">Календарь</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/profile">Профиль</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/orders">Мои заказы</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2>Список ваших заказов</h2>
+    
+        <!-- Форма фильтрации -->
+        <form method="get" class="mb-4">
+            <div class="row">
+                <!-- Фильтр по статусу заказа -->
+                <div class="col-md-3">
+                    <label for="filterStatus" class="form-label">Статус заказа</label>
+                    <select id="filterStatus" name="status" class="form-select">
+                        <option value="all">Все</option>
+                        <option value="upcoming">Будущие заказы</option>
+                        <option value="completed">Завершенные заказы</option>
+                    </select>
+                </div>
+    
+                <!-- Фильтр по имени клиента -->
+                <div class="col-md-3">
+                    <label for="filterName" class="form-label">Имя клиента</label>
+                    <input type="text" id="filterName" name="name" class="form-control" placeholder="Введите имя">
+                </div>
+    
+                <!-- Сортировка по дате -->
+                <div class="col-md-3">
+                    <label for="filterDate" class="form-label">Сортировка по дате</label>
+                    <select id="filterDate" name="dateSort" class="form-select">
+                        <option value="latest">Ближайшие</option>
+                        <option value="oldest">Дальние</option>
+                    </select>
+                </div>
+    
+                <!-- Кнопка для применения фильтров -->
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                </div>
+            </div>
+        </form>
+    
+        <!-- Таблица для отображения заказов -->
+        <h3>Будущие заказы</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Клиент</th>
+                    <th>Номер телефона</th>
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th>Цена</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Orders.upcoming}}
+                <tr>
+                    <td>{{.FirstName}} {{.LastName}} {{.Patronymic}}</td>
+                    <td>{{.PhoneNumber}}</td>
+                    <td>{{.StartTime.Format "2006-01-02 15:04"}}</td>
+                    <td>{{.EndTime.Format "2006-01-02 15:04"}}</td>
+                    <td>{{.Price}} руб.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    
+        <h3>Завершенные заказы</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Клиент</th>
+                    <th>Номер телефона</th>
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th>Цена</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Orders.completed}}
+                <tr>
+                    <td>{{.FirstName}} {{.LastName}} {{.Patronymic}}</td>
+                    <td>{{.PhoneNumber}}</td>
+                    <td>{{.StartTime.Format "2006-01-02 15:04"}}</td>
+                    <td>{{.EndTime.Format "2006-01-02 15:04"}}</td>
+                    <td>{{.Price}} руб.</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -155,6 +155,11 @@
         <!-- Фильтры -->
         <div class="row filter-section g-3 align-items-end">
             <div class="col">
+                <label for="filterName" class="form-label">Имя няни</label>
+                <input type="text" id="filterName" class="form-control shadow-sm rounded" placeholder="Введите имя">
+            </div>
+    
+            <div class="col">
                 <label for="filterCity" class="form-label">Город</label>
                 <select id="filterCity" class="form-select shadow-sm rounded">
                     <option value="">Все города</option>
@@ -244,6 +249,38 @@
                 });
             });
         });
+        document.addEventListener('DOMContentLoaded', function () {
+    const applyFiltersButton = document.getElementById('applyFilters');
+    const nannyCatalog = document.getElementById('nannyCatalog');
+
+    applyFiltersButton.addEventListener('click', function () {
+        const nameValue = document.getElementById('filterName').value.toLowerCase();
+        const cityValue = document.getElementById('filterCity').value;
+        const experienceValue = parseInt(document.getElementById('filterExperience').value) || 0;
+        const priceValue = parseFloat(document.getElementById('filterPrice').value) || Infinity;
+        const ratingValue = parseFloat(document.getElementById('filterRating').value) || 0;
+
+        // Проходим по всем карточкам нянь и фильтруем их
+        const nannyCards = nannyCatalog.getElementsByClassName('nanny-card');
+        Array.from(nannyCards).forEach(card => {
+            const name = card.querySelector('.card-title').textContent.toLowerCase();
+            const experience = parseInt(card.dataset.experience);
+            const price = parseFloat(card.dataset.price);
+            const rating = parseFloat(card.dataset.rating);
+            const city = card.dataset.city;
+
+            const nameMatches = name.includes(nameValue);
+            const cityMatches = cityValue === "" || city === cityValue;
+
+            if (nameMatches && cityMatches && experience >= experienceValue && price <= priceValue && rating >= ratingValue) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    });
+});
+
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>

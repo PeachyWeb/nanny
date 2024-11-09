@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -439,7 +441,6 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Отладочный вывод для проверки значений времени
 	log.Printf("Заказ ID: %d, Няня: %s, Начало: %s, Конец: %s\n", orderID, nannyName, startTime, endTime)
-
 	// Подготовка данных для шаблона с полным форматом даты
 	data := struct {
 		OrderID   int
@@ -465,4 +466,132 @@ func OrderDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Ошибка при выполнении шаблона:", err)
 		http.Error(w, "Ошибка отображения страницы заказа", http.StatusInternalServerError)
 	}
+}
+
+// getOrdersForNanny получает заказы для конкретной няни и подготавливает данные для шаблона
+func getOrdersForNanny(nannyID int) (map[string][]Order, error) {
+	rows, err := Db.Query(`
+		SELECT a.idappointment, a.userid, a.nannyid, a.starttime, a.endtime, a.price,
+		       u.first_name, u.last_name, u.patronymic, u.phone
+		FROM appointments a
+		JOIN users u ON a.userid = u.id
+		WHERE a.nannyid = $1`, nannyID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	now := time.Now()
+	orders := map[string][]Order{
+		"upcoming":  {},
+		"completed": {},
+	}
+
+	for rows.Next() {
+		var order Order
+		var firstName, lastName, patronymic, phone sql.NullString
+		var startTime, endTime time.Time
+
+		if err := rows.Scan(&order.ID, &order.UserID, &order.NannyID, &startTime, &endTime, &order.Price,
+			&firstName, &lastName, &patronymic, &phone); err != nil {
+			return nil, err
+		}
+
+		order.FirstName = getValidString(firstName)
+		order.LastName = getValidString(lastName)
+		order.Patronymic = getValidString(patronymic)
+		order.PhoneNumber = getValidString(phone)
+		order.StartTime = formatTime(startTime)
+		order.EndTime = formatTime(endTime)
+
+		if endTime.After(now) {
+			orders["upcoming"] = append(orders["upcoming"], order)
+		} else {
+			orders["completed"] = append(orders["completed"], order)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func formatTime(t time.Time) time.Time {
+	return t.Truncate(time.Minute) // Округляем время до ближайшей минуты
+}
+
+func OrdersHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	if err != nil {
+		http.Error(w, "Ошибка при получении сессии", http.StatusInternalServerError)
+		return
+	}
+
+	nannyID, ok := session.Values["userID"].(int)
+	if !ok || nannyID <= 0 {
+		http.Error(w, "Необходимо войти в систему", http.StatusUnauthorized)
+		return
+	}
+
+	orders, err := getOrdersForNanny(nannyID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Получаем значения фильтров из запроса
+	status := r.URL.Query().Get("status")
+	name := r.URL.Query().Get("name")
+	dateSort := r.URL.Query().Get("dateSort")
+
+	// Фильтрация по статусу заказа
+	if status == "upcoming" {
+		orders["completed"] = nil
+	} else if status == "completed" {
+		orders["upcoming"] = nil
+	}
+
+	// Фильтрация по имени клиента
+	if name != "" {
+		for key := range orders {
+			var filteredOrders []Order
+			for _, order := range orders[key] {
+				if strings.Contains(strings.ToLower(order.FirstName+" "+order.LastName), strings.ToLower(name)) {
+					filteredOrders = append(filteredOrders, order)
+				}
+			}
+			orders[key] = filteredOrders
+		}
+	}
+
+	// Сортировка по дате начала
+	for key := range orders {
+		sort.Slice(orders[key], func(i, j int) bool {
+			if dateSort == "oldest" {
+				return orders[key][i].StartTime.Before(orders[key][j].StartTime)
+			}
+			return orders[key][i].StartTime.After(orders[key][j].StartTime)
+		})
+	}
+
+	err = TmplOrders.Execute(w, struct {
+		Orders map[string][]Order
+	}{
+		Orders: orders,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// getValidString возвращает строку из sql.NullString, если она валидна
+func getValidString(ns sql.NullString) string {
+	if ns.Valid {
+		return ns.String
+	}
+	return "Не указано" // Возвращаем текст, если значение не задано
 }

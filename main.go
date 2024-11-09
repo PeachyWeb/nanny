@@ -45,6 +45,8 @@ func main() {
 	http.HandleFunc("/register", handlers.RegisterHandler) // Обработчик для регистрации
 	http.HandleFunc("/catalog", handlers.CatalogPage)      // Обработчик для каталога нянь
 
+	http.HandleFunc("/orders", handlers.OrdersHandler) //обработчик для няни чтобы она смотрела заказы
+
 	// Дополнительные маршруты для функционала
 	http.HandleFunc("/admin/employees", handlers.AdminEmployeesPage)
 

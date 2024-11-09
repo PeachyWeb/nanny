@@ -62,7 +62,33 @@ type OrderHistoryPage struct {
 	Orders []Order
 }
 
+/*
+	type Order struct {
+		ID          int
+		StartTime   time.Time
+		EndTime     time.Time
+		UserID      int
+		NannyID     int
+		NannyName   string
+		Price       float64
+		ReviewLeft  bool
+		Date        time.Time
+		Total       float64        // Или другой тип для цены
+		Review      *Review        // Если используется для хранения отзыва
+		ClientName  string         // Имя клиента
+		ClientPhone string         // Телефон клиента
+		UserName    sql.NullString // Используем sql.NullString для обработки NULL
+		PhoneNumber sql.NullString // Используем sql.NullString для обработки NULL
+		FirstName   sql.NullString // Используем sql.NullString для обработки NULL
+		LastName    sql.NullString // Используем sql.NullString для обработки NULL
+		Patronymic  sql.NullString
+	}
+*/
 type Order struct {
+	FirstName   string
+	LastName    string
+	Patronymic  string
+	PhoneNumber string
 	ID          int
 	StartTime   time.Time
 	EndTime     time.Time
@@ -78,18 +104,6 @@ type Order struct {
 	ClientPhone string  // Телефон клиента
 }
 
-/*
-	type Order struct {
-		ID         int
-		StartTime  time.Time
-		EndTime    time.Time
-		Price      sql.NullFloat64 // Используйте sql.NullFloat64 для обработки NULL значений
-		NannyID    int
-		NannyName  string
-		Review     *Review // Измените на указатель, чтобы избежать ошибки, если отзыва нет
-		ReviewLeft bool
-	}
-*/
 type PageData struct {
 	UserID        int
 	UserName      string
@@ -130,6 +144,7 @@ var TmplProfile = template.Must(template.ParseFiles("templates/profile.html"))
 var TmplNannyGuide = template.Must(template.ParseFiles("templates/nanny_guid.html"))
 var TmplOrderHistory = template.Must(template.ParseFiles("templates/order_history.html"))
 var TmplOrderDetails = template.Must(template.ParseFiles("templates/order_details.html"))
+var TmplOrders = template.Must(template.ParseFiles("templates/orders.html"))
 
 // Обновление данных пользователя
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {

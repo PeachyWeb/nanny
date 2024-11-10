@@ -163,7 +163,8 @@
             transform: translateY(-3px);
         }
 
-        .btn-secondary, .btn-primary {
+        .btn-secondary,
+        .btn-primary {
             padding: 13px 25px;
             font-size: 15px;
             font-weight: bold;
@@ -178,11 +179,42 @@
             margin-top: -12px;
         }
 
-        .btn-secondary:hover, .btn-primary:hover {
+        .btn-secondary:hover,
+        .btn-primary:hover {
             background-color: rgb(21, 63, 59);
             box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6);
             transform: translateY(-3px);
         }
+
+        /* Новый стиль для кнопки "Посмотреть заказы" */
+.btn-orders {
+    padding: 13px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: rgb(33, 104, 97);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    margin-left: 23px;
+    margin-top: -12px;
+}
+
+.btn-orders:hover {
+    background-color: rgb(21, 63, 59);
+    box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6);
+    transform: translateY(-3px);
+}
+
+.button-group {
+    display: flex;
+    gap: 20px; /* Отступ между кнопками */
+    justify-content: center; /* Выравнивание кнопок по центру */
+    margin-top: 10px;
+}
+
     </style>
 </head>
 
@@ -234,26 +266,35 @@
     </div>
 
     <!-- Основной контент -->
-    <div class="container mt-5">
-        {{ if eq .Role "admin" }}
-        <h2>Панель администратора</h2>
-        <form action="/admin_page" method="GET">
-            <button type="submit" class="btn btn-secondary">Перейти на админскую страницу</button>
-        </form>
-        {{ else if eq .Role "nanny" }}
-        <h2>Панель няни</h2>
-        <p>Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
-        <form action="/edit_nanny" method="GET">
-            <button type="submit" class="btn btn-primary">Перейти в каталог нянь</button>
-        </form>
-        {{ else if eq .Role "user" }}
-        <h2>Станьте няней!</h2>
-        <p>Если вы хотите стать няней, ознакомьтесь с гайдом по регистрации.</p>
-        <form action="/become_nanny_guide" method="GET">
-            <button type="submit" class="btn btn-success">Посмотреть гайд</button>
-        </form>
-        {{ end }}
+    <!-- Панель внизу экрана -->
+<div class="sliding-panel" id="slidingPanel">
+    <div class="d-flex flex-column align-items-center">
+        <div>
+            {{ if eq .Role "admin" }}
+            <p class="small-subtext">Вы можете зайти на страницу администратора</p>
+            <form action="/admin_page" method="GET">
+                <button type="submit" class="btn-secondary">Страница админа</button>
+            </form>
+            {{ else if eq .Role "nanny" }}
+            <p class="small-subtext">Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
+            <div class="button-group">
+                <form action="/edit_nanny" method="GET">
+                    <button type="submit" class="btn-primary">Каталог нянь</button>
+                </form>
+                <form action="/orders" method="GET">
+                    <button type="submit" class="btn-orders">Посмотреть заказы</button>
+                </form>
+            </div>
+            {{ else if eq .Role "user" }}
+            <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
+            <form action="/become_nanny_guide" method="GET">
+                <button type="submit" class="custom-user-btn">Стать няней</button>
+            </form>
+            {{ end }}
+        </div>
     </div>
+</div>
+
 
     <!-- Панель внизу экрана -->
     <div class="sliding-panel" id="slidingPanel">
@@ -265,12 +306,14 @@
                     <button type="submit" class="btn-secondary">Страница админа</button>
                 </form>
                 {{ else if eq .Role "nanny" }}
-                <p class="small-subtext">Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
+                <p class="small-subtext">Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими
+                    услугами.</p>
                 <form action="/edit_nanny" method="GET">
                     <button type="submit" class="btn-primary">Каталог нянь</button>
                 </form>
                 {{ else if eq .Role "user" }}
-                <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
+                <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего
+                    малыша!</p>
                 <form action="/become_nanny_guide" method="GET">
                     <button type="submit" class="custom-user-btn">Стать няней</button>
                 </form>
@@ -278,7 +321,7 @@
             </div>
         </div>
     </div>
-    
+
 
     <!-- Скрипты -->
     <script>

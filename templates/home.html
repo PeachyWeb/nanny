@@ -185,6 +185,36 @@
             box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6);
             transform: translateY(-3px);
         }
+
+        /* Новый стиль для кнопки "Посмотреть заказы" */
+.btn-orders {
+    padding: 13px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background-color: rgb(33, 104, 97);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    margin-left: 23px;
+    margin-top: -12px;
+}
+
+.btn-orders:hover {
+    background-color: rgb(21, 63, 59);
+    box-shadow: 0 15px 25px rgba(125, 255, 156, 0.6);
+    transform: translateY(-3px);
+}
+
+.button-group {
+    display: flex;
+    gap: 20px; /* Отступ между кнопками */
+    justify-content: center; /* Выравнивание кнопок по центру */
+    margin-top: 10px;
+}
+
     </style>
 </head>
 
@@ -236,32 +266,35 @@
     </div>
 
     <!-- Основной контент -->
-    <div class="sliding-panel" id="slidingPanel">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                {{ if eq .Role "admin" }}
-                <p class="small-subtext">Вы можете зайти на страницу администратора</p>
-                <form action="/admin_page" method="GET">
-                    <button type="submit" class="btn-secondary">Страница админа</button>
-                </form>
-                {{ else if eq .Role "nanny" }}
-                <p class="small-subtext">Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
+    <!-- Панель внизу экрана -->
+<div class="sliding-panel" id="slidingPanel">
+    <div class="d-flex flex-column align-items-center">
+        <div>
+            {{ if eq .Role "admin" }}
+            <p class="small-subtext">Вы можете зайти на страницу администратора</p>
+            <form action="/admin_page" method="GET">
+                <button type="submit" class="btn-secondary">Страница админа</button>
+            </form>
+            {{ else if eq .Role "nanny" }}
+            <p class="small-subtext">Добро пожаловать, няня! Вы можете просмотреть каталоги нянь и управлять своими услугами.</p>
+            <div class="button-group">
                 <form action="/edit_nanny" method="GET">
                     <button type="submit" class="btn-primary">Каталог нянь</button>
                 </form>
-                <!-- Кнопка для просмотра заказов внизу -->
                 <form action="/orders" method="GET">
-                    <button type="submit" class="btn-success">Посмотреть заказы</button>
+                    <button type="submit" class="btn-orders">Посмотреть заказы</button>
                 </form>
-                {{ else if eq .Role "user" }}
-                <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
-                <form action="/become_nanny_guide" method="GET">
-                    <button type="submit" class="custom-user-btn">Стать няней</button>
-                </form>
-                {{ end }}
             </div>
+            {{ else if eq .Role "user" }}
+            <p class="small-subtext">У вас есть возможность стать няней или найти профессиональную няню для вашего малыша!</p>
+            <form action="/become_nanny_guide" method="GET">
+                <button type="submit" class="custom-user-btn">Стать няней</button>
+            </form>
+            {{ end }}
         </div>
     </div>
+</div>
+
 
     <!-- Панель внизу экрана -->
     <div class="sliding-panel" id="slidingPanel">

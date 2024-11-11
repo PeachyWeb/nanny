@@ -8,39 +8,47 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
         body {
-        background-color: #f0f4f8;
-        background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
-        background-size: cover;
-        background-position: center top;
-        background-repeat: repeat;
-        background-attachment: fixed;
-        font-family: 'Roboto', sans-serif;
-        overflow-x: hidden;
-        transition: background-color 0.6s ease, transform 0.6s ease; /* Updated for smoothness */
-        will-change: transform;
-        min-height: 100vh;
-        animation: moveBackground 15s ease-in-out infinite; /* Smoother animation timing */
-    }
-
-    @keyframes moveBackground {
-        0% {
+            background-color: #f0f4f8;
+            background-image: url('https://cdn1.ozone.ru/s3/multimedia-f/6299820219.jpg');
+            background-size: cover;
             background-position: center top;
+            background-repeat: repeat;
+            background-attachment: fixed;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.6s ease, transform 0.6s ease;
+            /* Updated for smoothness */
+            will-change: transform;
+            min-height: 100vh;
+            animation: moveBackground 15s ease-in-out infinite;
+            /* Smoother animation timing */
         }
-        50% {
-            background-position: center 80%;
-        }
-        100% {
-            background-position: center top;
-        }
-    }
 
+        @keyframes moveBackground {
+            0% {
+                background-position: center top;
+            }
+
+            50% {
+                background-position: center 80%;
+            }
+
+            100% {
+                background-position: center top;
+            }
+        }
+
+        /* Фиксируем навигацию сверху */
         .navbar {
-            background-color: turquoise;
+            background-color: turquoise; /* Цвет фона навигационной панели */
         }
 
+        /* Текст Nanny Market жирным */
         .navbar-brand {
             font-weight: bold;
             color: rgb(0, 0, 109);
+            justify-content: left;
+            margin-left: -93px;
         }
 
         .navbar-nav .nav-link {
@@ -49,6 +57,11 @@
 
         .navbar-nav .nav-link:hover {
             color: #007bff;
+        }
+
+        .navbar-collapse {
+            justify-content: right;
+            margin-right: -93px;
         }
 
         .profile-container {
@@ -96,7 +109,8 @@
         }
 
         .mb-3 label {
-            color: rgb(84, 84, 84); /* Устанавливаем серый цвет для меток времени */
+            color: rgb(84, 84, 84);
+            /* Устанавливаем серый цвет для меток времени */
         }
 
         .form-group input,
@@ -113,25 +127,33 @@
         }
 
         .btnn {
-            color: black; /* Цвет текста кнопки */
-            border: 2px solid transparent; /* Прозрачная обводка */
-            border-radius: 12px; /* Закругление углов */
-            padding: 5px 10px; /* Отступы внутри кнопки (по вертикали и горизонтали) */
-            background-color: rgb(201, 201, 181); /* Прозрачный фон */
-            cursor: pointer; /* Указатель курсора при наведении */
+            color: black;
+            /* Цвет текста кнопки */
+            border: 2px solid transparent;
+            /* Прозрачная обводка */
+            border-radius: 12px;
+            /* Закругление углов */
+            padding: 5px 10px;
+            /* Отступы внутри кнопки (по вертикали и горизонтали) */
+            background-color: rgb(201, 201, 181);
+            /* Прозрачный фон */
+            cursor: pointer;
+            /* Указатель курсора при наведении */
         }
 
         .btnn:hover {
-            background-color: rgb(181, 181, 163); /* Цвет обводки при наведении (если требуется) */
+            background-color: rgb(181, 181, 163);
+            /* Цвет обводки при наведении (если требуется) */
             color: white;
         }
-
     </style>
+
+
+
 </head>
 
 <body>
 
-    <!-- Навигационная панель -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="/main">Nanny Market</a>
@@ -158,45 +180,49 @@
         </div>
     </nav>
 
+
+
     <!-- Основной контейнер -->
     <div class="profile-container">
         <h2>Редактировать данные</h2>
         <div class="section-container">
             <form action="/update_nanny" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" value="{{ .Nanny.ID }}">
-            
+
                 <div class="form-group">
                     <label for="name">Имя:</label>
                     <input type="text" id="name" name="name" value="{{ .Nanny.Name }}" required class="form-control">
                 </div>
-            
+
                 <div class="form-group">
                     <label for="description">Описание:</label>
-                    <textarea id="description" name="description" required class="form-control">{{ .Nanny.Description }}</textarea>
+                    <textarea id="description" name="description" required
+                        class="form-control">{{ .Nanny.Description }}</textarea>
                 </div>
-            
+
                 <div class="form-group">
                     <label for="price">Цена в рублях:</label>
-                    <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required class="form-control">
+                    <input type="number" id="price" name="price" value="{{ .Nanny.Price }}" required
+                        class="form-control">
                 </div>
-            
+
                 <div class="form-group">
                     <label for="city">Город:</label>
                     <input type="text" id="city" name="city" value="{{ .Nanny.City }}" class="form-control">
                 </div>
-            
+
                 <!-- Поле для загрузки фотографии -->
                 <div class="form-group">
                     <label for="photo">Загрузить фотографию:</label>
                     <input type="file" id="photo" name="photo" class="form-control">
                 </div>
-            
+
                 <!-- Кнопка "Сохранить изменения" -->
                 <div class="text-center mt-3">
                     <button type="submit" class="btnn">Сохранить изменения</button>
                 </div>
             </form>
-            
+
         </div>
     </div>
 

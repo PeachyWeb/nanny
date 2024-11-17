@@ -62,28 +62,6 @@ type OrderHistoryPage struct {
 	Orders []Order
 }
 
-/*
-	type Order struct {
-		ID          int
-		StartTime   time.Time
-		EndTime     time.Time
-		UserID      int
-		NannyID     int
-		NannyName   string
-		Price       float64
-		ReviewLeft  bool
-		Date        time.Time
-		Total       float64        // Или другой тип для цены
-		Review      *Review        // Если используется для хранения отзыва
-		ClientName  string         // Имя клиента
-		ClientPhone string         // Телефон клиента
-		UserName    sql.NullString // Используем sql.NullString для обработки NULL
-		PhoneNumber sql.NullString // Используем sql.NullString для обработки NULL
-		FirstName   sql.NullString // Используем sql.NullString для обработки NULL
-		LastName    sql.NullString // Используем sql.NullString для обработки NULL
-		Patronymic  sql.NullString
-	}
-*/
 type Order struct {
 	FirstName   string
 	LastName    string
@@ -95,7 +73,7 @@ type Order struct {
 	UserID      int
 	NannyID     int
 	NannyName   string
-	Price       float64
+	Price       sql.NullFloat64
 	ReviewLeft  bool
 	Date        time.Time
 	Total       float64 // Или другой тип для цены

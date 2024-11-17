@@ -234,7 +234,7 @@
                 {{ range .Orders }}
                     <div class="order-card">
                         <h5>Заказ от {{ .StartTime.Format "02.01.2006 15:04" }} 
-                        (Сумма: {{ if .Price.Valid }}{{ printf "%.2f" .Price.Float64 }}{{ else }}Цена не указана{{ end }})</h5>
+                            Сумма: {{ if .Price.Valid }}{{ printf "%.2f" .Price.Float64 }}{{ else }}Цена не указана{{ end }}</h5>
                         <p>Няня: {{ .NannyName }}</p>
 
                         {{ if .ReviewLeft }}

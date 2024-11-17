@@ -95,8 +95,11 @@ func OrderHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		var rating sql.NullInt64
 		var createdAt sql.NullTime
 
-		err := rows.Scan(&order.ID, &order.StartTime, &order.Price, &order.NannyID, &order.NannyName,
-			&reviewLeft, &comment, &rating, &createdAt)
+		err := rows.Scan(
+			&order.ID, &order.StartTime, &order.Price,
+			&order.NannyID, &order.NannyName,
+			&reviewLeft, &comment, &rating, &createdAt,
+		)
 		if err != nil {
 			log.Println("Ошибка при сканировании заказов:", err)
 			http.Error(w, "Ошибка при обработке заказов", http.StatusInternalServerError)
